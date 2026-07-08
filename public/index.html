@@ -3,22 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0e1a16" />
     <meta
       name="description"
-      content="北京榫合云科技有限公司提供会议会务、活动策划、软件开发、IT咨询、广告设计与企业培训服务，一站式落地，响应快、交付闭环。"
+      content="北京榫合云科技有限公司为企业市场部与活动负责人提供会议会务、活动策划与广告设计的一站式落地，1 天响应、5 步闭环、全程可追溯。"
     />
-    <meta property="og:title" content="北京榫合云科技有限公司 | 会议会务与数字化服务" />
+    <meta property="og:title" content="北京榫合云科技有限公司 | 会议会务与活动策划" />
     <meta
       property="og:description"
-      content="企业会议、活动策划与数字化交付，从需求对接到复盘归档的一站式服务。"
+      content="企业会议、活动策划与品牌物料，从需求对接到复盘归档的一站式服务。"
     />
-    <title>北京榫合云科技有限公司 | 会议会务与数字化服务</title>
-    <link rel="stylesheet" href="/styles.css?v=0.2.0" />
+    <title>北京榫合云科技有限公司 | 会议会务与活动策划</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css?v=0.3.0" />
   </head>
   <body>
+    <a class="skip-link" href="#top">跳到主要内容</a>
+
     <header class="site-header" data-elevated="false">
       <a class="brand" href="#top" aria-label="北京榫合云科技有限公司首页">
-        <span class="brand-mark">榫</span>
+        <span class="brand-mark" aria-hidden="true">榫</span>
         <span>
           <strong>榫合云科技</strong>
           <small>Sunheyun Technology</small>
@@ -51,50 +60,70 @@
 
     <main id="top">
       <section class="hero">
-        <div class="hero-media" aria-hidden="true"></div>
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-          <p class="eyebrow">北京榫合云科技有限公司</p>
-          <h1>企业会议、活动策划与数字化交付，一站式落地</h1>
-          <p class="hero-copy">
-            从需求澄清、方案报价、执行交付到复盘归档，为企业客户承接会议会务、软件外包、IT 咨询与品牌设计项目，减少沟通成本，让每一次合作都可控可追溯。
-          </p>
-          <div class="hero-actions">
-            <a class="button primary" href="#contact">发起项目需求</a>
-            <a class="button ghost" href="#workflow">查看交付流程</a>
+        <div class="hero__bg" aria-hidden="true"></div>
+        <div class="hero-grid">
+          <div class="hero-content">
+            <p class="eyebrow">企业市场部 · 活动负责人的会务伙伴</p>
+            <h1>会议、活动与品牌物料，<br />交给一支团队盯到底</h1>
+            <p class="hero-copy">
+              从需求澄清、方案报价到现场执行与复盘归档，北京榫合云为你承接会议会务、活动策划与广告设计，减少对接成本，让每一次合作都可控、可追溯。
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="#contact">发起项目需求</a>
+              <a class="button ghost" href="#workflow">查看交付流程</a>
+            </div>
+            <dl class="hero-proof">
+              <div>
+                <dt>1 天</dt>
+                <dd>需求响应</dd>
+              </div>
+              <div>
+                <dt>5 步</dt>
+                <dd>标准交付闭环</dd>
+              </div>
+              <div>
+                <dt>全程</dt>
+                <dd>托管与归档</dd>
+              </div>
+            </dl>
           </div>
-        </div>
-        <div class="hero-strip" aria-label="服务摘要">
-          <div>
-            <strong>5 类</strong>
-            <span>核心服务</span>
-          </div>
-          <div>
-            <strong>1 天</strong>
-            <span>需求响应</span>
-          </div>
-          <div>
-            <strong>闭环</strong>
-            <span>从方案到复盘</span>
-          </div>
+
+          <aside class="hero-visual" aria-hidden="true">
+            <div class="visual-card">
+              <span class="visual-kicker">本周可承接</span>
+              <ul class="visual-list">
+                <li><span>会议会务执行</span><em>签到 · 接待 · 直播</em></li>
+                <li><span>活动策划</span><em>流程 · 嘉宾 · 物料</em></li>
+                <li><span>广告设计与物料</span><em>主视觉 · 展板 · 手册</em></li>
+              </ul>
+              <div class="visual-rule"></div>
+              <p class="visual-note">关键节点主动同步，交付后附复盘报告。</p>
+            </div>
+            <svg class="visual-motif" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+              <path d="M40 150V70h40v30h40V70h40v80" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M40 150h120" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+              <circle cx="100" cy="46" r="14" stroke="currentColor" stroke-width="2.4" />
+              <path d="M100 32v-10M114 46h10M100 60v10M86 46h-10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+            </svg>
+          </aside>
         </div>
       </section>
 
       <section class="trust-band" aria-label="合作客户">
-        <p>适合服务中小企业、协会组织、园区机构与内部会议团队</p>
+        <p>适合服务中小企业、协会组织、园区机构与企业市场团队</p>
         <div class="trust-logos">
           <span>行业协会</span>
           <span>科技园区</span>
-          <span>培训机构</span>
-          <span>企业市场部</span>
+          <span>市场部</span>
           <span>创业公司</span>
+          <span>培训机构</span>
         </div>
       </section>
 
       <section class="section" id="services">
         <div class="section-heading centered">
           <span class="section-kicker">Services</span>
-          <h2>核心服务</h2>
+          <h2>为活动负责人准备的服务</h2>
           <p class="section-subtitle">按项目制承接，明确边界、报价与交付物，避免临时加价和无限返工。</p>
         </div>
         <div class="service-grid">
@@ -124,6 +153,18 @@
           </article>
           <article class="service-card">
             <div class="service-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+            </div>
+            <h3>广告设计与物料</h3>
+            <ul>
+              <li>平面设计与数字广告</li>
+              <li>会务主视觉与展板</li>
+              <li>手册、邀请函、办公用品</li>
+              <li>发布物料统筹</li>
+            </ul>
+          </article>
+          <article class="service-card">
+            <div class="service-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             </div>
             <h3>软件开发与外包</h3>
@@ -144,18 +185,6 @@
               <li>数字化工具选型辅导</li>
               <li>企业管理咨询</li>
               <li>业务流程培训</li>
-            </ul>
-          </article>
-          <article class="service-card">
-            <div class="service-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
-            </div>
-            <h3>广告设计与物料</h3>
-            <ul>
-              <li>平面设计与数字广告</li>
-              <li>会务主视觉与展板</li>
-              <li>手册、邀请函、办公用品</li>
-              <li>发布物料统筹</li>
             </ul>
           </article>
           <article class="service-card featured">
@@ -411,7 +440,7 @@
         </div>
         <div class="footer-contact">
           <span>联系电话：请通过需求表单联系</span>
-          <span>邮箱：service@sunyun.example</span>
+          <span>邮箱：service@sunheyun.example</span>
           <span>地址：北京市丰台区丰管路甲1号北楼二层202-775室</span>
         </div>
         <div class="footer-links">
@@ -425,6 +454,6 @@
       </div>
     </footer>
 
-    <script src="/app.js?v=0.2.0" type="module"></script>
+    <script src="/app.js?v=0.3.0" type="module"></script>
   </body>
 </html>
