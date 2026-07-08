@@ -6,6 +6,7 @@ services:
     container_name: sunyun-portal
     restart: unless-stopped
     environment:
+      NODE_ENV: production
       PORT: 8080
       SUNYUN_ADMIN_TOKEN: ${SUNYUN_ADMIN_TOKEN:-replace-with-a-strong-token}
     ports:
