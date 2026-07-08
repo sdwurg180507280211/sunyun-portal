@@ -1,11 +1,11 @@
 # 北京榫合云科技有限公司门户网站
 
-这是一个轻量门户站首版，目标是形成完整获客闭环：
+这是一个轻量门户站首版，定位从“会务活动展示”调整为“软件定制开发与轻量数字化交付”，目标是形成完整获客闭环：
 
-1. 客户进入门户，了解公司定位、服务范围、交付流程和适用场景。
-2. 客户填写项目需求表单。
+1. 客户进入门户，了解公司定位、开发服务、交付流程和适用场景。
+2. 客户填写软件项目需求表单。
 3. 服务端校验并保存线索到 `data/leads.jsonl`。
-4. 后台页面读取线索，支持导出 CSV。
+4. 后台页面读取线索，支持筛选与导出 CSV。
 5. 后续可接入企业微信、钉钉、邮件、数据库或 CRM。
 
 ## 技术栈
@@ -15,7 +15,7 @@
 - 数据存储：本地 JSONL 文件
 - 部署：阿里云 ECS + Node.js + Nginx 反向代理
 
-首版没有引入第三方依赖，适合快速上线、低成本维护。
+首版没有引入第三方依赖，适合快速上线、低成本维护。当前版本更适合中小企业软件外包、业务后台、数据看板、官网小程序和内部工具类项目获客。
 
 ## 本地运行
 
@@ -30,16 +30,16 @@ npm run dev
 - 线索后台：`http://localhost:4173/admin.html`
 - 健康检查：`http://localhost:4173/api/health`
 
-默认后台口令：
+默认后台口令仅用于本地开发：
 
 ```text
 dev-local-token
 ```
 
-生产环境必须设置自己的口令：
+生产环境必须设置自己的口令；如果 `NODE_ENV=production` 且没有设置 `SUNYUN_ADMIN_TOKEN`，后台线索 API 不可访问：
 
 ```bash
-SUNYUN_ADMIN_TOKEN='替换成强口令' PORT=8080 npm start
+NODE_ENV=production SUNYUN_ADMIN_TOKEN='替换成强口令' PORT=8080 npm start
 ```
 
 ## 打包
@@ -74,6 +74,8 @@ dist/sunyun-portal-<version>.tar.gz
 
 每行是一条 JSON，便于后续导入 MySQL、PostgreSQL、飞书多维表格或 CRM。
 
+当前线索字段围绕软件项目设计：项目类型、客户单位、联系人、电话、微信、城市、期望上线时间、使用人数/数据规模、预算范围、需求描述、来源、UA 和 IP。
+
 ## ECS 部署建议
 
 更完整的部署流程见：
@@ -90,13 +92,13 @@ deploy/README_DEPLOY.md
 ### 直接 Node 启动
 
 ```bash
-SUNYUN_ADMIN_TOKEN='替换成强口令' PORT=8080 npm start
+NODE_ENV=production SUNYUN_ADMIN_TOKEN='替换成强口令' PORT=8080 npm start
 ```
 
 ### Docker Compose 启动
 
 ```bash
-SUNYUN_ADMIN_TOKEN='替换成强口令' SUNYUN_PORT=8080 docker compose up -d --build
+NODE_ENV=production SUNYUN_ADMIN_TOKEN='替换成强口令' SUNYUN_PORT=8080 docker compose up -d --build
 ```
 
 ### Nginx 反向代理示例
@@ -117,6 +119,8 @@ server {
 }
 ```
 
+后续配置 HTTPS 和备案号。
+
 ## 上线前需要替换
 
 - `public/app.js` 中的 `contactEmail`
@@ -129,5 +133,5 @@ server {
 - 表单提交后推送到企业微信、钉钉或飞书。
 - 将 `data/leads.jsonl` 换成 MySQL/PostgreSQL。
 - 增加案例详情页、文章栏目、SEO sitemap。
-- 增加验证码和更严格的后台认证。
+- 增加验证码、更严格的后台认证和审计日志。
 - 增加访问统计，例如 Umami 或百度统计。
