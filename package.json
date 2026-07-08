@@ -1,0 +1,14 @@
+{
+  "name": "sunyun-portal",
+  "version": "0.2.0",
+  "private": true,
+  "description": "北京榫合云科技有限公司门户网站与客户线索闭环",
+  "type": "module",
+  "scripts": {
+    "dev": "PORT=4173 node server.js",
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

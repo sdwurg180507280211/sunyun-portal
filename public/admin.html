@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>榫合云科技 | 线索后台</title>
+    <link rel="stylesheet" href="/styles.css?v=0.2.0" />
+  </head>
+  <body class="admin-body">
+    <main class="admin-shell">
+      <section class="admin-header">
+        <div>
+          <a class="back-link" href="/">返回门户</a>
+          <h1>客户线索台账</h1>
+          <p>读取网站表单写入的本地线索数据，便于后续跟进、导出和迁移到 CRM。</p>
+        </div>
+        <div class="admin-actions">
+          <input id="tokenInput" type="password" placeholder="后台访问口令" />
+          <button class="button primary" id="loadLeadsButton">加载线索</button>
+          <button class="button secondary" id="exportButton" disabled>导出 CSV</button>
+        </div>
+      </section>
+
+      <section class="lead-stats" aria-label="线索统计">
+        <div>
+          <strong id="leadCount">0</strong>
+          <span>总线索</span>
+        </div>
+        <div>
+          <strong id="meetingCount">0</strong>
+          <span>会议/活动</span>
+        </div>
+        <div>
+          <strong id="softwareCount">0</strong>
+          <span>软件/咨询</span>
+        </div>
+      </section>
+
+      <section class="admin-toolbar">
+        <input id="searchInput" type="text" placeholder="搜索公司、联系人、电话或需求" disabled />
+        <select id="serviceFilter" disabled>
+          <option value="">全部服务类型</option>
+          <option value="会议会务执行">会议会务执行</option>
+          <option value="活动策划">活动策划</option>
+          <option value="软件开发与外包">软件开发与外包</option>
+          <option value="IT 咨询与培训">IT 咨询与培训</option>
+          <option value="广告设计与物料">广告设计与物料</option>
+        </select>
+      </section>
+
+      <section class="lead-table-wrap">
+        <table class="lead-table">
+          <thead>
+            <tr>
+              <th>编号</th>
+              <th>时间</th>
+              <th>服务</th>
+              <th>客户</th>
+              <th>联系人</th>
+              <th>电话</th>
+              <th>城市</th>
+              <th>需求</th>
+            </tr>
+          </thead>
+          <tbody id="leadTableBody">
+            <tr>
+              <td colspan="8" class="empty-cell">请输入口令后加载线索。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="/admin.js?v=0.2.0" type="module"></script>
+  </body>
+</html>
