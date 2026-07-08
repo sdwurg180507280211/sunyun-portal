@@ -4,7 +4,7 @@ const mobileNav = document.querySelector(".mobile-nav");
 const form = document.querySelector("#leadForm");
 const result = document.querySelector("#formResult");
 
-const contactEmail = "service@sunyun.example";
+const contactEmail = "service@sunheyun.example";
 
 window.addEventListener("scroll", () => {
   header?.setAttribute("data-elevated", String(window.scrollY > 24));
@@ -39,14 +39,14 @@ function formDataToObject(formData) {
 function buildSummary(payload, response) {
   return [
     `需求编号：${response.id}`,
-    `服务类型：${payload.serviceType}`,
+    `项目类型：${payload.serviceType}`,
     `客户单位：${payload.companyName || "未填写"}`,
     `联系人：${payload.contactName}`,
     `电话：${payload.phone}`,
     `微信：${payload.wechat || "未填写"}`,
     `城市：${payload.city || "未填写"}`,
-    `项目时间：${payload.eventDate || "未填写"}`,
-    `人数规模：${payload.attendees || "未填写"}`,
+    `期望上线时间：${payload.eventDate || "未填写"}`,
+    `使用人数/数据规模：${payload.attendees || "未填写"}`,
     `预算范围：${payload.budget || "暂不确定"}`,
     `需求描述：${payload.description}`
   ].join("\n");
@@ -85,7 +85,7 @@ form?.addEventListener("submit", async (event) => {
     const response = await fetch("/api/leads", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...payload, source: "homepage-form" })
+      body: JSON.stringify({ ...payload, source: "homepage-software-intake" })
     });
     const data = await response.json();
 
@@ -102,7 +102,7 @@ form?.addEventListener("submit", async (event) => {
       `${data.nextStep}。你也可以保留一份需求摘要，便于后续沟通。`,
       `
         <button class="button secondary" type="button" id="copySummaryButton">复制摘要</button>
-        <a class="button secondary" href="mailto:${contactEmail}?subject=${encodeURIComponent(`项目需求 ${data.id}`)}&body=${encodeURIComponent(summary)}">邮件确认</a>
+        <a class="button secondary" href="mailto:${contactEmail}?subject=${encodeURIComponent(`软件项目需求 ${data.id}`)}&body=${encodeURIComponent(summary)}">邮件确认</a>
       `
     );
     document.querySelector("#copySummaryButton")?.addEventListener("click", async () => {
