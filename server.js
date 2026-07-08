@@ -11,7 +11,8 @@ const dataDir = resolve(__dirname, "data");
 const leadsFile = resolve(dataDir, "leads.jsonl");
 
 const port = Number(process.env.PORT || 4173);
-const adminToken = process.env.SUNYUN_ADMIN_TOKEN || "dev-local-token";
+const isProduction = process.env.NODE_ENV === "production";
+const adminToken = process.env.SUNYUN_ADMIN_TOKEN || (isProduction ? "" : "dev-local-token");
 const rateWindowMs = 60 * 60 * 1000;
 const maxSubmissionsPerWindow = 8;
 const submissionHits = new Map();
@@ -34,7 +35,8 @@ const requiredLeadFields = ["serviceType", "contactName", "phone", "description"
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
-    "cache-control": "no-store"
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff"
   });
   response.end(JSON.stringify(payload));
 }
@@ -172,14 +174,13 @@ async function readLeads() {
   }
 }
 
-function hasAdminAccess(request, url) {
-  const queryToken = url.searchParams.get("token");
+function hasAdminAccess(request) {
   const headerToken = request.headers["x-admin-token"];
-  return queryToken === adminToken || headerToken === adminToken;
+  return Boolean(adminToken) && headerToken === adminToken;
 }
 
-async function handleLeadList(request, response, url) {
-  if (!hasAdminAccess(request, url)) {
+async function handleLeadList(request, response) {
+  if (!hasAdminAccess(request)) {
     sendJson(response, 401, { ok: false, message: "无权访问线索数据" });
     return;
   }
@@ -199,7 +200,7 @@ async function serveStatic(request, response, url) {
   const filePath = normalize(join(publicDir, requestedPath));
 
   if (!filePath.startsWith(publicDir)) {
-    response.writeHead(403);
+    response.writeHead(403, { "x-content-type-options": "nosniff" });
     response.end("Forbidden");
     return;
   }
@@ -207,7 +208,7 @@ async function serveStatic(request, response, url) {
   try {
     const fileStat = await stat(filePath);
     if (!fileStat.isFile()) {
-      response.writeHead(404);
+      response.writeHead(404, { "x-content-type-options": "nosniff" });
       response.end("Not found");
       return;
     }
@@ -215,17 +216,23 @@ async function serveStatic(request, response, url) {
     const extension = extname(filePath);
     response.writeHead(200, {
       "content-type": mimeTypes[extension] || "application/octet-stream",
-      "cache-control": extension === ".html" ? "no-cache" : "public, max-age=86400"
+      "cache-control": extension === ".html" ? "no-cache" : "public, max-age=86400",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin"
     });
+    if (request.method === "HEAD") {
+      response.end();
+      return;
+    }
     createReadStream(filePath).pipe(response);
   } catch (error) {
     if (error.code === "ENOENT") {
-      response.writeHead(404);
+      response.writeHead(404, { "x-content-type-options": "nosniff" });
       response.end("Not found");
       return;
     }
     console.error("Static serving failed:", error);
-    response.writeHead(500);
+    response.writeHead(500, { "x-content-type-options": "nosniff" });
     response.end("Internal server error");
   }
 }
@@ -244,7 +251,7 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === "GET" && url.pathname === "/api/leads") {
-    await handleLeadList(request, response, url);
+    await handleLeadList(request, response);
     return;
   }
 
@@ -259,4 +266,7 @@ const server = createServer(async (request, response) => {
 server.listen(port, () => {
   console.log(`Sunyun portal running at http://localhost:${port}`);
   console.log(`Admin page: http://localhost:${port}/admin.html`);
+  if (!adminToken) {
+    console.warn("SUNYUN_ADMIN_TOKEN is not configured; lead admin API is disabled.");
+  }
 });
