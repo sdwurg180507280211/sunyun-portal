@@ -5,8 +5,8 @@ const searchInput = document.querySelector("#searchInput");
 const serviceFilter = document.querySelector("#serviceFilter");
 const tableBody = document.querySelector("#leadTableBody");
 const leadCount = document.querySelector("#leadCount");
-const meetingCount = document.querySelector("#meetingCount");
-const softwareCount = document.querySelector("#softwareCount");
+const developmentCount = document.querySelector("#developmentCount");
+const consultingCount = document.querySelector("#consultingCount");
 
 let allLeads = [];
 let currentFilter = { query: "", service: "" };
@@ -47,7 +47,9 @@ function getFilteredLeads() {
       lead.wechat,
       lead.city,
       lead.description,
-      lead.serviceType
+      lead.serviceType,
+      lead.budget,
+      lead.eventDate
     ]
       .join(" ")
       .toLowerCase();
@@ -56,14 +58,14 @@ function getFilteredLeads() {
 }
 
 function renderStats(leads) {
-  const meetingKeywords = ["会议", "活动", "物料", "广告"];
-  const softwareKeywords = ["软件", "咨询", "培训"];
+  const developmentKeywords = ["软件", "后台", "工具", "官网", "小程序", "落地页", "数据", "看板", "报表"];
+  const consultingKeywords = ["咨询", "选型", "支持", "活动"];
   leadCount.textContent = String(leads.length);
-  meetingCount.textContent = String(
-    leads.filter((lead) => meetingKeywords.some((keyword) => lead.serviceType?.includes(keyword))).length
+  developmentCount.textContent = String(
+    leads.filter((lead) => developmentKeywords.some((keyword) => lead.serviceType?.includes(keyword))).length
   );
-  softwareCount.textContent = String(
-    leads.filter((lead) => softwareKeywords.some((keyword) => lead.serviceType?.includes(keyword))).length
+  consultingCount.textContent = String(
+    leads.filter((lead) => consultingKeywords.some((keyword) => lead.serviceType?.includes(keyword))).length
   );
 }
 
@@ -142,7 +144,7 @@ function toCsvValue(value) {
 
 function exportCsv() {
   const leads = getFilteredLeads();
-  const headers = ["编号", "提交时间", "服务类型", "公司", "联系人", "电话", "微信", "城市", "项目时间", "人数", "预算", "需求"];
+  const headers = ["编号", "提交时间", "项目类型", "公司", "联系人", "电话", "微信", "城市", "期望上线时间", "使用人数/数据规模", "预算", "需求"];
   const rows = leads.map((lead) => [
     lead.id,
     lead.createdAt,
@@ -162,7 +164,7 @@ function exportCsv() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `sunyun-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `sunyun-software-leads-${new Date().toISOString().slice(0, 10)}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }
