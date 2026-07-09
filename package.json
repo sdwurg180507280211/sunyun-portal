@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "PORT=4173 node server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "node scripts/build.mjs"
   },
   "engines": {
     "node": ">=18"
