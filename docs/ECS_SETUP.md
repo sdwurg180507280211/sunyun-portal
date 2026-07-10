@@ -10,11 +10,11 @@
 sudo find /opt /home -path '*/sunyun-portal/data/leads.jsonl' -type f 2>/dev/null
 ```
 
-建立固定数据和备份目录：
+建立固定数据和备份目录，并一次性授权给自托管 Runner 使用的 `deployer` 用户：
 
 ```bash
 sudo mkdir -p /opt/sunyun-portal/data /opt/sunyun-portal/backups
-sudo chown deployer:deployer /opt/sunyun-portal /opt/sunyun-portal/backups
+sudo chown -R deployer:deployer /opt/sunyun-portal
 ```
 
 如果找到了旧文件，先复制和备份：
@@ -22,15 +22,17 @@ sudo chown deployer:deployer /opt/sunyun-portal /opt/sunyun-portal/backups
 ```bash
 sudo cp /实际路径/data/leads.jsonl /opt/sunyun-portal/data/leads.jsonl
 sudo cp /opt/sunyun-portal/data/leads.jsonl "/opt/sunyun-portal/backups/leads.jsonl.$(date +%Y%m%d-%H%M%S).bak"
+sudo chown -R deployer:deployer /opt/sunyun-portal
 ```
 
-容器内应用固定使用 UID/GID `1001:1001`，最后设置数据目录权限：
+自动部署工作流不会使用 `sudo`。Docker Compose 会让容器进程使用 Runner 当前用户的 UID/GID，因此 SQLite 与备份文件始终由 `deployer` 管理。
+
+查看实际 UID/GID：
 
 ```bash
-sudo chown -R 1001:1001 /opt/sunyun-portal/data
+id -u deployer
+id -g deployer
 ```
-
-不要把整个 `/opt/sunyun-portal` 递归改成 `1001:1001`，`.env` 和备份目录仍应由部署用户管理。
 
 ## 2. 生成后台密码哈希
 
@@ -51,6 +53,15 @@ scrypt:盐值:哈希值
 
 ## 3. 配置 `/opt/sunyun-portal/.env`
 
+先执行下面两条命令，记下结果：
+
+```bash
+id -u deployer
+id -g deployer
+```
+
+再创建环境文件：
+
 ```bash
 cat > /opt/sunyun-portal/.env <<'EOF_ENV'
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
@@ -61,6 +72,8 @@ SESSION_TTL_SECONDS=28800
 COOKIE_SECURE=1
 SUNYUN_PORT=8080
 SUNYUN_DATA_DIR=/opt/sunyun-portal/data
+SUNYUN_RUN_UID=替换为id -u deployer的结果
+SUNYUN_RUN_GID=替换为id -g deployer的结果
 # 首次升级期间建议保留旧值，便于自动回滚到旧镜像后继续访问旧后台。
 SUNYUN_ADMIN_TOKEN=替换为现有旧后台口令
 EOF_ENV
@@ -97,7 +110,7 @@ sudo systemctl reload nginx
 
 ## 5. 触发部署
 
-合并 PR 到 `main`，或在 GitHub Actions 手动运行 `Deploy to Aliyun ECS`。
+合并 PR 到 `main` 后，GitHub 会先运行 CI；只有依赖安装、类型检查、测试、生产构建和 SQLite standalone 冒烟测试全部通过，才会触发 ECS 自动部署。也可以在 GitHub Actions 手动运行 `Deploy to Aliyun ECS`。
 
 工作流会依次：
 
@@ -135,7 +148,7 @@ docker logs sunyun-portal 2>&1 | grep 'Legacy JSONL migration'
 检查宿主机数据文件：
 
 ```bash
-sudo ls -lah /opt/sunyun-portal/data
+ls -lah /opt/sunyun-portal/data
 ```
 
 ## 7. 手动回滚
@@ -143,6 +156,8 @@ sudo ls -lah /opt/sunyun-portal/data
 部署工作流会自动回滚。需要人工恢复上一镜像时，在 Runner 当前项目目录执行：
 
 ```bash
+export SUNYUN_RUN_UID="$(id -u)"
+export SUNYUN_RUN_GID="$(id -g)"
 docker tag sunyun-portal:rollback sunyun-portal:latest
 docker compose --env-file /opt/sunyun-portal/.env up -d --force-recreate --no-build sunyun-portal
 curl -fsS http://127.0.0.1:8080/api/health
