@@ -24,6 +24,7 @@ test("motion and color tokens honor accessibility constraints", () => {
 
 test("marketing page exposes the approved Pharma Prism sections", () => {
   const source = read("components/marketing/marketing-page.tsx");
+  const heroClaim = /让医药数字化，[\s\S]*落到真实业务里。/;
   for (const id of ["top", "audiences", "solutions", "delivery", "scenarios", "about", "contact"]) {
     assert.match(source, new RegExp(`id=["']${id}["']`));
   }
@@ -42,14 +43,23 @@ test("marketing page exposes the approved Pharma Prism sections", () => {
   assert.match(source, /<Reveal\b/);
   assert.match(source, /<LeadForm\s*\/>/);
   assert.match(source, /brand\.disclaimer/);
-  assert.match(source, /让医药数字化/);
+  assert.doesNotMatch("让医药数字化，<br />错误的后半句。", heroClaim);
+  assert.match(source, heroClaim);
   assert.doesNotMatch(source, /Delivery console|88\s*-|index \* 14|榫合云/);
 });
 
 test("marketing links constrain motion to reduced-motion-safe transforms", () => {
   const source = read("components/marketing/marketing-page.tsx");
+  const disallowedTransition = /\btransition-(?!(?:transform|opacity)\b)[^\s"'`]+/;
+  for (const utility of ["transition-all", "transition-colors", "transition-shadow", "transition-filter"]) {
+    assert.match(utility, disallowedTransition);
+  }
+  for (const utility of ["transition-transform", "transition-opacity"]) {
+    assert.doesNotMatch(utility, disallowedTransition);
+  }
   assert.match(source, /transition-transform/);
   assert.match(source, /motion-safe:hover:-translate-y-0\.5/);
   assert.doesNotMatch(source, /\btransition(?!-)\b/);
+  assert.doesNotMatch(source, disallowedTransition);
   assert.doesNotMatch(source, /hover:brightness-/);
 });
