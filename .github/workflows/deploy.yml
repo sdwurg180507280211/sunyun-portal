@@ -21,13 +21,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          runner_uid="$(id -u)"
-          runner_gid="$(id -g)"
-          sudo mkdir -p /opt/sunyun-portal/data /opt/sunyun-portal/backups
-          sudo chown "$runner_uid:$runner_gid" /opt/sunyun-portal /opt/sunyun-portal/backups
+          mkdir -p /opt/sunyun-portal/data /opt/sunyun-portal/backups
+          test -w /opt/sunyun-portal/data
+          test -w /opt/sunyun-portal/backups
 
           if [ -f "$GITHUB_WORKSPACE/data/leads.jsonl" ] && [ ! -f /opt/sunyun-portal/data/leads.jsonl ]; then
-            sudo cp "$GITHUB_WORKSPACE/data/leads.jsonl" /opt/sunyun-portal/data/leads.jsonl
+            cp "$GITHUB_WORKSPACE/data/leads.jsonl" /opt/sunyun-portal/data/leads.jsonl
           fi
 
           backup_dir="/opt/sunyun-portal/backups/$(date +%Y%m%d-%H%M%S)"
@@ -35,15 +34,11 @@ jobs:
           shopt -s nullglob
           data_files=(/opt/sunyun-portal/data/sunyun.db*)
           if [ ${#data_files[@]} -gt 0 ]; then
-            sudo cp -a "${data_files[@]}" "$backup_dir/"
+            cp -a "${data_files[@]}" "$backup_dir/"
           fi
           if [ -f /opt/sunyun-portal/data/leads.jsonl ]; then
-            sudo cp -a /opt/sunyun-portal/data/leads.jsonl "$backup_dir/"
+            cp -a /opt/sunyun-portal/data/leads.jsonl "$backup_dir/"
           fi
-          sudo chown -R "$runner_uid:$runner_gid" "$backup_dir"
-
-          # Dockerfile 中的 nextjs 用户固定为 UID/GID 1001；bind mount 会覆盖镜像内目录权限。
-          sudo chown -R 1001:1001 /opt/sunyun-portal/data
 
       - name: Checkout verified revision
         uses: actions/checkout@v4
@@ -59,6 +54,8 @@ jobs:
           grep -Eq '^ADMIN_USERNAME=.+$' "$env_file"
           grep -Eq '^ADMIN_PASSWORD_HASH=scrypt:.+:.+$' "$env_file"
           grep -Eq '^SESSION_SECRET=.{32,}$' "$env_file"
+          export SUNYUN_RUN_UID="$(id -u)"
+          export SUNYUN_RUN_GID="$(id -g)"
           docker compose --env-file "$env_file" config --quiet
 
       - name: Build, deploy, verify, and roll back on failure
@@ -66,6 +63,8 @@ jobs:
         run: |
           set -euo pipefail
           env_file=/opt/sunyun-portal/.env
+          export SUNYUN_RUN_UID="$(id -u)"
+          export SUNYUN_RUN_GID="$(id -g)"
           compose=(docker compose --env-file "$env_file")
           had_previous=0
 
