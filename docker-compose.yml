@@ -2,14 +2,31 @@ services:
   sunyun-portal:
     build:
       context: .
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost}
     image: sunyun-portal:latest
     container_name: sunyun-portal
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 8080
-      SUNYUN_ADMIN_TOKEN: ${SUNYUN_ADMIN_TOKEN:-replace-with-a-strong-token}
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost}
+      DATABASE_PATH: /app/data/sunyun.db
+      LEGACY_LEADS_PATH: /app/data/leads.jsonl
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?ADMIN_USERNAME is required}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:?ADMIN_PASSWORD_HASH is required}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
+      SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-28800}
+      COOKIE_SECURE: ${COOKIE_SECURE:-1}
+      TRUST_PROXY: "1"
     ports:
-      - "${SUNYUN_PORT:-8080}:8080"
+      - "127.0.0.1:${SUNYUN_PORT:-8080}:8080"
     volumes:
-      - ./data:/app/data
+      - ${SUNYUN_DATA_DIR:-./data}:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

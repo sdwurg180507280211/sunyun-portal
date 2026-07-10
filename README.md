@@ -1,137 +1,110 @@
 # 北京榫合云科技有限公司门户网站
 
-这是一个轻量门户站首版，定位从“会务活动展示”调整为“软件定制开发与轻量数字化交付”，目标是形成完整获客闭环：
+面向官网获客与早期线索管理的模块化单体应用。第一阶段已由原生 HTML + 单文件 Node 服务升级为：
 
-1. 客户进入门户，了解公司定位、开发服务、交付流程和适用场景。
-2. 客户填写软件项目需求表单。
-3. 服务端校验并保存线索到 `data/leads.jsonl`。
-4. 后台页面读取线索，支持筛选与导出 CSV。
-5. 后续可接入企业微信、钉钉、邮件、数据库或 CRM。
+- Next.js 16 App Router + React 19 + TypeScript
+- HeroUI v3 + Tailwind CSS v4
+- SQLite（`better-sqlite3`）
+- HttpOnly Cookie 管理员会话
+- Docker Compose + Nginx + 阿里云 ECS 自托管 Runner
 
-## 技术栈
+## 功能
 
-- 前端：原生 HTML / CSS / JavaScript
-- 服务端：Node.js 内置 HTTP 模块
-- 数据存储：本地 JSONL 文件
-- 部署：阿里云 ECS + Node.js + Nginx 反向代理
-
-首版没有引入第三方依赖，适合快速上线、低成本维护。当前版本更适合中小企业软件外包、业务后台、数据看板、官网小程序和内部工具类项目获客。
+- 品牌门户、服务范围、交付流程与项目需求表单
+- 表单校验、蜜罐字段、应用层与 Nginx 双层限流
+- SQLite 持久化、索引、线索状态流转与审计日志
+- 管理员登录、线索搜索筛选、状态更新与 CSV 导出
+- 旧版 `data/leads.jsonl` 首次启动自动迁移，重复启动不会重复导入
+- 健康检查、数据库备份脚本、CI 构建测试与 ECS 自动部署
 
 ## 本地运行
 
 ```bash
-cd /Users/edy/ideaProjects/sunyun-portal
+cp .env.example .env.local
+npm install
+npm run auth:hash -- '你的至少12位强密码'
+# 将输出写入 .env.local 的 ADMIN_PASSWORD_HASH
 npm run dev
 ```
 
 访问：
 
-- 门户首页：`http://localhost:4173`
-- 线索后台：`http://localhost:4173/admin.html`
+- 门户：`http://localhost:4173`
+- 后台：`http://localhost:4173/admin`
 - 健康检查：`http://localhost:4173/api/health`
 
-默认后台口令仅用于本地开发：
+本地 HTTP 开发时设置：
 
-```text
-dev-local-token
+```env
+COOKIE_SECURE=0
 ```
 
-生产环境必须设置自己的口令；如果 `NODE_ENV=production` 且没有设置 `SUNYUN_ADMIN_TOKEN`，后台线索 API 不可访问：
+生产 HTTPS 必须使用：
+
+```env
+COOKIE_SECURE=1
+```
+
+## 检查
 
 ```bash
-NODE_ENV=production SUNYUN_ADMIN_TOKEN='替换成强口令' PORT=8080 npm start
+npm run typecheck
+npm test
+npm run build
 ```
 
-## 打包
+## 数据
+
+默认数据库：`data/sunyun.db`。
+
+首次打开数据库时，如果发现 `data/leads.jsonl` 且尚未迁移，会在事务中自动导入旧线索并写入迁移标记。旧 JSONL 不会删除，可作为回滚备份。
+
+手动执行迁移核对：
 
 ```bash
-cd /Users/edy/ideaProjects/sunyun-portal
-bash scripts/package.sh
+npm run db:migrate
 ```
 
-产物输出到：
-
-```text
-dist/sunyun-portal-<version>.tar.gz
-```
-
-打包内容包含：
-
-- `server.js`
-- `package.json`
-- `public/`
-- `deploy/`
-- `.env.example`
-- 空的 `data/` 目录
-
-## 线索数据
-
-表单提交后写入：
-
-```text
-/Users/edy/ideaProjects/sunyun-portal/data/leads.jsonl
-```
-
-每行是一条 JSON，便于后续导入 MySQL、PostgreSQL、飞书多维表格或 CRM。
-
-当前线索字段围绕软件项目设计：项目类型、客户单位、联系人、电话、微信、城市、期望上线时间、使用人数/数据规模、预算范围、需求描述、来源、UA 和 IP。
-
-## ECS 部署建议
-
-更完整的部署流程见：
-
-```text
-deploy/README_DEPLOY.md
-```
-
-推荐两种方式：
-
-1. `tar.gz + systemd + Nginx`：适合普通 ECS，稳定、低资源。
-2. `Docker Compose`：适合后续继续接 MySQL、统计服务、通知服务。
-
-### 直接 Node 启动
+手动备份：
 
 ```bash
-NODE_ENV=production SUNYUN_ADMIN_TOKEN='替换成强口令' PORT=8080 npm start
+BACKUP_DIR=/path/to/backups npm run db:backup
 ```
 
-### Docker Compose 启动
+## Docker
 
 ```bash
-NODE_ENV=production SUNYUN_ADMIN_TOKEN='替换成强口令' SUNYUN_PORT=8080 docker compose up -d --build
+cp .env.example .env
+# 填写真实域名、管理员哈希和随机 SESSION_SECRET
+docker compose --env-file .env up -d --build
 ```
 
-### Nginx 反向代理示例
+容器端口仅绑定宿主机 `127.0.0.1`，公网由 Nginx 代理。生产数据目录通过 `SUNYUN_DATA_DIR` 指向 `/opt/sunyun-portal/data`，不再跟随 GitHub Runner 工作区，避免 checkout 清理未跟踪数据。
 
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
+## 阿里云 ECS
 
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
+完整步骤见 `docs/ECS_SETUP.md`。合并到 `main` 后，自托管 Runner 会：
+
+1. 抢救旧工作区中的 `leads.jsonl`；
+2. 备份现有 SQLite；
+3. 构建镜像；
+4. 启动新容器；
+5. 通过 `/api/health` 验证。
+
+## 生产环境必填
+
+```env
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=scrypt:...
+SESSION_SECRET=至少32位随机字符串
+COOKIE_SECURE=1
+SUNYUN_PORT=8080
+SUNYUN_DATA_DIR=/opt/sunyun-portal/data
 ```
 
-后续配置 HTTPS 和备案号。
+生成密钥：
 
-## 上线前需要替换
-
-- `public/app.js` 中的 `contactEmail`
-- 首页底部或联系区域中的真实电话、邮箱、微信
-- 域名、备案号、公司 Logo、案例图片
-- 后台口令 `SUNYUN_ADMIN_TOKEN`
-
-## 后续增强方向
-
-- 表单提交后推送到企业微信、钉钉或飞书。
-- 将 `data/leads.jsonl` 换成 MySQL/PostgreSQL。
-- 增加案例详情页、文章栏目、SEO sitemap。
-- 增加验证码、更严格的后台认证和审计日志。
-- 增加访问统计，例如 Umami 或百度统计。
+```bash
+openssl rand -hex 32
+```

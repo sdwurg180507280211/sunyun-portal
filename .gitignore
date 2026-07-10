@@ -1,7 +1,16 @@
 node_modules/
+.next/
+out/
 dist/
 release/
 .env
-data/leads.jsonl
+.env.*
+!.env.example
+data/*.db
+data/*.db-*
+data/*.sqlite
+data/*.jsonl
+backups/
 *.log
 .DS_Store
+coverage/
