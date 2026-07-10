@@ -1,6 +1,9 @@
 FROM node:22-bookworm-slim AS dependencies
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null; \
+    apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
 COPY package.json ./
 RUN --mount=type=cache,target=/root/.npm \
