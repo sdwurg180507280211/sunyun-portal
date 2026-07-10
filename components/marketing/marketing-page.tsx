@@ -38,11 +38,12 @@ export function MarketingPage() {
 
       <main className="overflow-hidden" id="top">
         <section className="prism-grid-bg relative grid min-h-[700px] lg:grid-cols-[1.05fr_.95fr]">
-          <div className="relative z-10 flex items-center px-4 py-20 sm:px-8 lg:px-[max(8vw,2rem)]">
+          <div className="relative z-10 flex items-center px-4 py-20 sm:px-8 lg:px-10 xl:px-16 2xl:px-[max(8vw,2rem)]">
             <div className="max-w-3xl">
               <p className="section-kicker">面向机构客户 · 医药产业数字化技术服务</p>
-              <h1 className="mt-7 text-[clamp(2.75rem,6vw,5.2rem)] font-[750] leading-[1.03] tracking-[-.025em]">
-                让医药数字化，<br /><span className="text-[var(--brand)]">落到真实业务里。</span>
+              <h1 className="mt-7 text-[clamp(2.25rem,10vw,2.55rem)] font-[750] leading-[1.03] tracking-[-.025em] sm:text-[3rem] lg:text-[3.25rem] xl:text-[4rem] 2xl:text-[5rem]">
+                <span className="block whitespace-nowrap">让医药数字化，</span>
+                <span className="block whitespace-nowrap text-[var(--brand)]">落到真实业务里。</span>
               </h1>
               <p className="mt-7 max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
                 {brand.description}从场景梳理、系统建设与数据连接，到上线支持与持续迭代。
