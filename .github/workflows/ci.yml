@@ -19,3 +19,28 @@ jobs:
       - run: npm run build
         env:
           NEXT_PUBLIC_SITE_URL: https://example.com
+          NEXT_TELEMETRY_DISABLED: "1"
+      - name: Verify standalone SQLite runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .next/standalone/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+          mkdir -p .next/standalone/.next
+          cp -R .next/static .next/standalone/.next/static
+          cp -R public .next/standalone/public
+          PORT=8080 \
+          HOSTNAME=127.0.0.1 \
+          DATABASE_PATH="$RUNNER_TEMP/sunyun-ci.db" \
+          COOKIE_SECURE=0 \
+          NEXT_TELEMETRY_DISABLED=1 \
+          node .next/standalone/server.js > "$RUNNER_TEMP/sunyun-ci.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8080/api/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/sunyun-ci.log"
+          exit 1
