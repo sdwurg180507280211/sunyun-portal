@@ -24,7 +24,7 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: https://example.com
           NEXT_TELEMETRY_DISABLED: "1"
-      - name: Verify standalone consultation workflow
+      - name: Verify standalone consultation workflow and capture visual QA
         shell: bash
         run: |
           set -euo pipefail
@@ -83,6 +83,28 @@ jobs:
             http://127.0.0.1:8080/api/leads)
           printf '%s' "$leads_response" | grep -q '自动化验收示例机构'
           printf '%s' "$leads_response" | grep -q '"total":1'
+
+          chrome_bin=$(command -v google-chrome || command -v google-chrome-stable || true)
+          test -n "$chrome_bin"
+          mkdir -p "$RUNNER_TEMP/yunyihui-visual-qa"
+          for viewport in 1440,1000 1280,800 1024,768 768,1024 390,844 375,667; do
+            filename=${viewport/,/x}
+            "$chrome_bin" --headless=new --no-sandbox --disable-gpu --hide-scrollbars \
+              --run-all-compositor-stages-before-draw --virtual-time-budget=2500 \
+              --window-size="$viewport" --screenshot="$RUNNER_TEMP/yunyihui-visual-qa/${filename}.png" \
+              http://127.0.0.1:8080/
+          done
+          "$chrome_bin" --headless=new --no-sandbox --disable-gpu --hide-scrollbars \
+            --force-prefers-reduced-motion --run-all-compositor-stages-before-draw --virtual-time-budget=2500 \
+            --window-size=390,844 --screenshot="$RUNNER_TEMP/yunyihui-visual-qa/390x844-reduced-motion.png" \
+            http://127.0.0.1:8080/
+      - name: Upload visual QA screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: yunyihui-visual-qa
+          path: ${{ runner.temp }}/yunyihui-visual-qa/*.png
+          if-no-files-found: error
+          retention-days: 7
       - name: Build production Docker image
         env:
           DOCKER_BUILDKIT: "1"
