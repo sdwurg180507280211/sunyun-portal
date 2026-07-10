@@ -14,5 +14,3 @@ backups/
 *.log
 .DS_Store
 coverage/
-.superpowers/
-graphify-out/

@@ -1,0 +1,250 @@
+<style>
+  .compare-head {
+    max-width: 900px;
+    margin-bottom: 24px;
+  }
+  .compare-head h2 {
+    margin: 10px 0 10px;
+    font-size: clamp(34px, 5vw, 58px);
+    line-height: 1.04;
+    letter-spacing: -.05em;
+  }
+  .compare-head p { max-width: 780px; line-height: 1.7; }
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 17px;
+  }
+  .concept-card {
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid rgba(71, 95, 120, .17);
+    border-radius: 23px;
+    background: #fff;
+    cursor: pointer;
+    box-shadow: 0 18px 55px rgba(18, 51, 86, .10);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+  }
+  .concept-card:hover { transform: translateY(-5px); box-shadow: 0 26px 68px rgba(18, 51, 86, .16); }
+  .concept-card.selected { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, .14), 0 26px 68px rgba(18, 51, 86, .16); }
+  .recommend-badge {
+    position: absolute;
+    z-index: 20;
+    top: 13px;
+    right: 13px;
+    padding: 6px 9px;
+    border-radius: 999px;
+    color: #06334d;
+    background: #8bf0e0;
+    box-shadow: 0 8px 22px rgba(29, 194, 181, .22);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .mini-page {
+    position: relative;
+    height: 430px;
+    overflow: hidden;
+  }
+  .mini-nav {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 53px;
+    padding: 0 17px;
+    border-bottom: 1px solid rgba(80, 105, 131, .12);
+    font-size: 6px;
+  }
+  .mini-logo { display: flex; align-items: center; gap: 7px; font-size: 8px; font-weight: 850; }
+  .mini-symbol {
+    display: grid;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    border-radius: 8px 8px 12px 8px;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+  }
+  .mini-links { opacity: .6; word-spacing: 7px; }
+  .mini-hero { position: relative; z-index: 5; padding: 57px 20px 20px; }
+  .mini-kicker {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 16px;
+    font-size: 6px;
+    font-weight: 900;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+  }
+  .mini-kicker::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 14%, transparent); }
+  .mini-title { position: relative; z-index: 4; max-width: 265px; font-size: 27px; font-weight: 800; line-height: 1; letter-spacing: -.055em; }
+  .mini-title em { display: block; margin-top: 4px; font-style: normal; }
+  .mini-desc { position: relative; z-index: 4; max-width: 245px; margin-top: 14px; font-size: 7px; line-height: 1.75; opacity: .68; }
+  .mini-actions { position: relative; z-index: 4; display: flex; gap: 7px; margin-top: 17px; }
+  .mini-btn { padding: 8px 10px; border-radius: 8px; font-size: 6px; font-weight: 900; }
+  .mini-btn.outline { border: 1px solid currentColor; opacity: .7; }
+  .mini-proof { position: absolute; z-index: 6; left: 17px; right: 17px; bottom: 15px; display: grid; grid-template-columns: repeat(3, 1fr); overflow: hidden; border: 1px solid rgba(86,110,136,.13); border-radius: 10px; backdrop-filter: blur(12px); }
+  .mini-proof span { padding: 8px 5px; border-right: 1px solid rgba(86,110,136,.13); text-align: center; font-size: 5px; }
+  .mini-proof span:last-child { border: 0; }
+  .card-info { padding: 18px 18px 20px; border-top: 1px solid rgba(72,98,124,.13); }
+  .card-title { display: flex; align-items: center; gap: 9px; }
+  .card-letter { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 9px; color: #14304a; background: #eef4f8; font-size: 11px; font-weight: 900; }
+  .card-title h3 { margin: 0; font-size: 17px; }
+  .english-name { display: block; margin: 4px 0 0 37px; color: #8796a6; font-size: 8px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+  .card-info > p { margin: 11px 0 0; color: #65798c; font-size: 11px; line-height: 1.65; }
+  .tradeoff { margin-top: 12px; padding-top: 11px; border-top: 1px solid rgba(72,98,124,.12); color: #8392a2; font-size: 9px; line-height: 1.55; }
+  .tradeoff b { color: #4d6074; }
+
+  /* 1 — Pharma Digital Flow */
+  .flow-page {
+    color: #0b2035;
+    background:
+      linear-gradient(90deg, rgba(220,232,242,.65) 1px, transparent 1px),
+      linear-gradient(rgba(220,232,242,.65) 1px, transparent 1px),
+      radial-gradient(circle at 75% 28%, rgba(99,180,255,.18), transparent 24%),
+      #f9fcfe;
+    background-size: 42px 42px, 42px 42px, auto, auto;
+  }
+  .flow-page .mini-symbol { background: linear-gradient(145deg, #2667ef, #20c7bb); }
+  .flow-page .mini-kicker { color: #2563eb; }
+  .flow-page .mini-title em { color: transparent; background: linear-gradient(95deg, #2563eb, #20bcb5 55%, #8266ee); -webkit-background-clip: text; }
+  .flow-page .mini-btn:first-child { color: #fff; background: #2867ef; box-shadow: 0 9px 24px rgba(40,103,239,.22); }
+  .flow-page .mini-proof { background: rgba(255,255,255,.58); }
+  .flow-orb {
+    position: absolute;
+    right: -52px;
+    bottom: 30px;
+    width: 220px;
+    height: 220px;
+    border-radius: 44% 56% 64% 36% / 48% 42% 58% 52%;
+    background: radial-gradient(circle at 28% 24%, rgba(255,255,255,.95), transparent 16%), radial-gradient(circle at 65% 34%, rgba(102,236,212,.82), transparent 27%), linear-gradient(145deg, #76d8ff, #3e78f3 53%, #8b6cef);
+    box-shadow: inset 25px 22px 55px rgba(255,255,255,.48), 0 30px 60px rgba(44,89,179,.22);
+    transform: rotate(-11deg);
+  }
+  .flow-orb::after { content: ""; position: absolute; inset: 19%; border: 1px solid rgba(255,255,255,.56); border-radius: inherit; transform: rotate(18deg); }
+  .flow-node { position: absolute; z-index: 5; width: 6px; height: 6px; border: 2px solid white; border-radius: 50%; background: #2a79ef; box-shadow: 0 0 0 5px rgba(255,255,255,.12); }
+  .fn1 { right: 74px; bottom: 165px; }
+  .fn2 { right: 138px; bottom: 94px; }
+  .fn3 { right: 54px; bottom: 72px; }
+  .flow-glass { position: absolute; z-index: 6; right: 12px; top: 80px; padding: 10px 11px; border: 1px solid rgba(255,255,255,.72); border-radius: 11px; background: rgba(255,255,255,.65); box-shadow: 0 12px 30px rgba(37,73,116,.12); backdrop-filter: blur(14px); font-size: 6px; font-weight: 800; }
+
+  /* 2 — Pharma Prism */
+  .prism-page { color: #0a1f3e; background: #f4f7fb; }
+  .prism-page .mini-nav { background: rgba(255,255,255,.76); }
+  .prism-page .mini-symbol { border-radius: 6px; background: #1758d5; }
+  .prism-page .mini-kicker { color: #1758d5; }
+  .prism-page .mini-title { font-size: 25px; }
+  .prism-page .mini-title em { color: #1758d5; }
+  .prism-page .mini-btn:first-child { color: #fff; background: #123f9e; }
+  .prism-page .mini-proof { background: rgba(255,255,255,.82); }
+  .prism-grid { position: absolute; inset: 53px 0 0 49%; border-left: 1px solid rgba(30,70,125,.11); background-image: linear-gradient(90deg, rgba(32,75,130,.10) 1px, transparent 1px), linear-gradient(rgba(32,75,130,.10) 1px, transparent 1px); background-size: 32px 32px; }
+  .prism-shape {
+    position: absolute;
+    right: 16px;
+    top: 102px;
+    width: 160px;
+    height: 175px;
+    clip-path: polygon(50% 0%, 96% 28%, 78% 100%, 15% 88%, 0 29%);
+    background: linear-gradient(145deg, rgba(217,244,255,.96), #4d83ec 43%, #b9c9e9 72%, #7a60e9);
+    box-shadow: inset 28px 18px 45px rgba(255,255,255,.6);
+  }
+  .prism-shape::after { content: ""; position: absolute; inset: 24%; border: 1px solid rgba(255,255,255,.67); transform: rotate(28deg); }
+  .prism-axis { position: absolute; z-index: 5; right: 25px; top: 290px; display: grid; grid-template-columns: repeat(3, 1fr); width: 155px; gap: 5px; }
+  .prism-axis i { height: 4px; border-radius: 999px; background: #c5d4e8; }
+  .prism-axis i:first-child { background: #1f64e0; }
+
+  /* 3 — BioCloud */
+  .bio-page {
+    color: #edf7ff;
+    background: radial-gradient(circle at 82% 32%, rgba(42,103,236,.26), transparent 26%), radial-gradient(circle at 16% 84%, rgba(32,198,181,.14), transparent 30%), #08192b;
+  }
+  .bio-page::before { content: ""; position: absolute; inset: 0; opacity: .18; background-image: radial-gradient(rgba(142,205,255,.8) .55px, transparent .7px); background-size: 17px 17px; }
+  .bio-page .mini-nav { border-color: rgba(255,255,255,.09); background: rgba(8,25,43,.54); }
+  .bio-page .mini-symbol { background: linear-gradient(145deg, #376ef0, #17b8ac); }
+  .bio-page .mini-kicker { color: #6ee7d8; }
+  .bio-page .mini-title { font-size: 25px; }
+  .bio-page .mini-title em { color: #79e7d8; }
+  .bio-page .mini-desc { color: #b8cbdc; }
+  .bio-page .mini-btn:first-child { color: #071a29; background: #71e3d5; }
+  .bio-page .mini-proof { border-color: rgba(255,255,255,.11); color: #acc1d2; background: rgba(255,255,255,.05); }
+  .bio-page .mini-proof span { border-color: rgba(255,255,255,.10); }
+  .cloud-network { position: absolute; right: 0; bottom: 30px; width: 205px; height: 230px; }
+  .cloud-ring { position: absolute; border: 1px solid rgba(88,218,204,.22); border-radius: 50%; box-shadow: inset 0 0 45px rgba(43,105,229,.11); }
+  .cr1 { inset: 10px; }
+  .cr2 { inset: 48px 24px 24px 48px; }
+  .cr3 { inset: 77px 55px 51px 81px; background: rgba(92,104,242,.16); }
+  .bio-dot { position: absolute; z-index: 4; width: 6px; height: 6px; border-radius: 50%; background: #65e5d5; box-shadow: 0 0 0 5px rgba(101,229,213,.08), 0 0 20px rgba(101,229,213,.55); }
+  .bd1 { top: 35px; left: 74px; }
+  .bd2 { top: 96px; right: 22px; }
+  .bd3 { bottom: 37px; left: 48px; }
+  .bd4 { bottom: 58px; right: 69px; background: #869dff; }
+  .cloud-panel { position: absolute; z-index: 5; right: 8px; top: 77px; width: 126px; padding: 10px; border: 1px solid rgba(255,255,255,.11); border-radius: 10px; background: rgba(255,255,255,.06); backdrop-filter: blur(12px); }
+  .cloud-panel i { display: block; height: 4px; margin: 5px 0; border-radius: 99px; background: rgba(182,208,230,.14); }
+  .cloud-panel i:first-child { width: 58%; background: linear-gradient(90deg, #6ae3d4, #7899ff); }
+
+  .choice-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin-top: 20px;
+    padding: 17px 18px;
+    border: 1px solid rgba(37,99,235,.15);
+    border-radius: 16px;
+    color: #36526e;
+    background: linear-gradient(100deg, rgba(239,247,255,.88), rgba(239,253,250,.78));
+    font-size: 12px;
+    line-height: 1.65;
+  }
+  .choice-note b { color: #174da8; }
+  @media (max-width: 980px) {
+    .compare-grid { grid-template-columns: 1fr; }
+    .mini-page { height: 405px; }
+  }
+</style>
+
+<div class="compare-head">
+  <div class="label">YUNYIHUI · THREE EQUAL VISUAL OPTIONS</div>
+  <h2>这次是三套真正可比较的“医药科技 C 方向”</h2>
+  <p class="subtitle">它们都服务于“医药行业数字化”，但第一印象不同。点击整张卡片选择；终端里的回复优先于浏览器点击。</p>
+</div>
+
+<div class="compare-grid cards">
+  <article class="card concept-card" data-choice="c1-pharma-digital-flow" onclick="toggleSelect(this)">
+    <div class="recommend-badge">Recommended</div>
+    <div class="mini-page flow-page">
+      <div class="mini-nav"><div class="mini-logo"><span class="mini-symbol">云</span>云医荟科技</div><div class="mini-links">解决方案 场景 联系</div></div>
+      <div class="mini-hero"><div class="mini-kicker">Pharma digital solutions</div><div class="mini-title">让医药业务，<em>在云端高效连接。</em></div><div class="mini-desc">为药企、医疗机构与医药商业公司提供业务系统、数据平台与 AI 工作流服务。</div><div class="mini-actions"><span class="mini-btn">聊聊业务场景 ↗</span><span class="mini-btn outline">探索方案</span></div></div>
+      <div class="flow-orb"></div><i class="flow-node fn1"></i><i class="flow-node fn2"></i><i class="flow-node fn3"></i><div class="flow-glass">● 医药数据流已连接</div>
+      <div class="mini-proof"><span>业务流程</span><span>数据平台</span><span>AI 工具</span></div>
+    </div>
+    <div class="card-info"><div class="card-title"><span class="card-letter">1</span><h3>医药智流</h3></div><span class="english-name">Pharma Digital Flow</span><p>银白空间、医疗蓝、生命青和少量生物紫；以液态生命体承载数据连接。</p><div class="tradeoff"><b>优势：</b>最有设计感，也保持 B2B 可信度。<br><b>风险：</b>液态效果过多会变成通用 AI 模板，需严格克制。</div></div>
+  </article>
+
+  <article class="card concept-card" data-choice="c2-pharma-prism" onclick="toggleSelect(this)">
+    <div class="mini-page prism-page">
+      <div class="mini-nav"><div class="mini-logo"><span class="mini-symbol">云</span>云医荟科技</div><div class="mini-links">平台 数据 方法</div></div>
+      <div class="mini-hero"><div class="mini-kicker">Structured for pharma</div><div class="mini-title">把医药数据，<em>变成清晰的行动依据。</em></div><div class="mini-desc">统一数据口径、业务流程和协作视图，让每个关键决策有迹可循。</div><div class="mini-actions"><span class="mini-btn">了解数据方案 ↗</span><span class="mini-btn outline">查看能力</span></div></div>
+      <div class="prism-grid"></div><div class="prism-shape"></div><div class="prism-axis"><i></i><i></i><i></i></div>
+      <div class="mini-proof"><span>数据治理</span><span>专题分析</span><span>权限审计</span></div>
+    </div>
+    <div class="card-info"><div class="card-title"><span class="card-letter">2</span><h3>医药棱镜</h3></div><span class="english-name">Pharma Prism</span><p>冷白、深蓝、银灰与棱镜结构；强调数据秩序、专业分析和企业级交付。</p><div class="tradeoff"><b>优势：</b>最稳重、最像成熟企业服务商。<br><b>风险：</b>情感与生命感较弱，容易接近传统咨询或数据公司。</div></div>
+  </article>
+
+  <article class="card concept-card" data-choice="c3-biocloud-network" onclick="toggleSelect(this)">
+    <div class="mini-page bio-page">
+      <div class="mini-nav"><div class="mini-logo"><span class="mini-symbol">云</span>云医荟科技</div><div class="mini-links">系统 知识 连接</div></div>
+      <div class="mini-hero"><div class="mini-kicker">Connected pharma intelligence</div><div class="mini-title">连接医药知识、<em>数据与每一次协作。</em></div><div class="mini-desc">用稳定的系统底座承载业务协同、知识流动和持续数字化能力。</div><div class="mini-actions"><span class="mini-btn">启动数字化项目 ↗</span><span class="mini-btn outline">探索云图</span></div></div>
+      <div class="cloud-network"><i class="cloud-ring cr1"></i><i class="cloud-ring cr2"></i><i class="cloud-ring cr3"></i><i class="bio-dot bd1"></i><i class="bio-dot bd2"></i><i class="bio-dot bd3"></i><i class="bio-dot bd4"></i></div><div class="cloud-panel"><i></i><i></i><i></i></div>
+      <div class="mini-proof"><span>知识连接</span><span>智能协同</span><span>持续服务</span></div>
+    </div>
+    <div class="card-info"><div class="card-title"><span class="card-letter">3</span><h3>生物云图</h3></div><span class="english-name">BioCloud Network</span><p>深海军蓝、薄荷青和分子网络；沉浸感与前沿技术气质最强。</p><div class="tradeoff"><b>优势：</b>最炫、最有空间深度。<br><b>风险：</b>偏冷且更像生物科技 SaaS，可能削弱定制服务的亲和力。</div></div>
+  </article>
+</div>
+
+<div class="choice-note"><span>✦</span><div><b>我的推荐仍是 1「医药智流」：</b>它最符合你最初选择 C 的原因——既有科技与医药感，也不会让潜在客户误以为云医荟在销售一款单一软件。正式命名使用 <b>Pharma Digital Flow</b>，避免“Clinical”带来的诊疗语义。</div></div>
