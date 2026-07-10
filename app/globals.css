@@ -2,16 +2,23 @@
 @import "@heroui/styles";
 
 :root {
-  --background: oklch(0.985 0.006 170);
-  --foreground: oklch(0.19 0.018 170);
-  --accent: oklch(0.52 0.12 165);
-  --accent-foreground: oklch(0.99 0 0);
-  --surface: oklch(1 0 0);
-  --surface-secondary: oklch(0.968 0.008 170);
-  --surface-tertiary: oklch(0.93 0.015 170);
-  --border: oklch(0.89 0.015 170);
-  --muted: oklch(0.55 0.02 170);
-  --radius: 1rem;
+  --background: #f3f6fa;
+  --surface: #ffffff;
+  --surface-secondary: #edf2f7;
+  --surface-tertiary: #dce7f4;
+  --foreground: #10233f;
+  --brand: #1758d5;
+  --brand-light: #4e83ec;
+  --brand-soft: #dce7f4;
+  --accent: var(--brand);
+  --accent-foreground: #ffffff;
+  --signal: #13b7a6;
+  --prism-violet: #7057e8;
+  --border: #d8e3ef;
+  --muted: #5b7088;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.375rem;
 }
 
 * {
@@ -26,10 +33,7 @@ html {
 body {
   margin: 0;
   color: var(--foreground);
-  background:
-    radial-gradient(circle at 10% 0%, color-mix(in oklch, var(--accent) 12%, transparent), transparent 28rem),
-    radial-gradient(circle at 90% 18%, oklch(0.84 0.06 210 / 0.28), transparent 26rem),
-    var(--background);
+  background: var(--background);
   font-family: Inter, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   text-rendering: optimizeLegibility;
 }
@@ -40,44 +44,231 @@ a {
 }
 
 ::selection {
-  color: white;
-  background: oklch(0.45 0.12 165);
+  color: #ffffff;
+  background: var(--brand);
 }
 
 .site-shell {
-  width: min(1180px, calc(100% - 2rem));
+  width: min(1200px, calc(100% - 2rem));
   margin-inline: auto;
 }
 
-.glass-panel {
-  border: 1px solid color-mix(in oklch, var(--border) 80%, transparent);
-  background: color-mix(in oklch, white 86%, transparent);
-  box-shadow: 0 24px 70px oklch(0.2 0.04 170 / 0.08);
-  backdrop-filter: blur(18px);
-}
-
 .section-kicker {
-  color: var(--accent);
-  font-size: 0.76rem;
+  color: var(--brand);
+  font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .section-title {
-  margin-top: 0.65rem;
-  max-width: 760px;
-  font-size: clamp(2rem, 4vw, 3.6rem);
-  font-weight: 750;
+  margin-top: 0.75rem;
+  max-width: 800px;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 740;
   line-height: 1.08;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.025em;
 }
 
 .section-copy {
   max-width: 720px;
   color: var(--muted);
-  font-size: 1.02rem;
+  font-size: 1rem;
   line-height: 1.85;
+}
+
+.prism-grid-bg {
+  background-image:
+    linear-gradient(90deg, rgb(112 137 164 / 8%) 1px, transparent 1px),
+    linear-gradient(rgb(112 137 164 / 8%) 1px, transparent 1px),
+    linear-gradient(145deg, #fff, #f2f6fa 62%, #eaf0f7);
+  background-size: 58px 58px, 58px 58px, auto;
+}
+
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal[data-state="hidden"] {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.reveal[data-state="visible"] {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 520ms ease var(--reveal-delay),
+    transform 520ms ease var(--reveal-delay);
+}
+
+.prism-graphic {
+  position: relative;
+  width: min(42vw, 470px);
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+
+.prism-axis {
+  position: absolute;
+  background: rgb(45 79 117 / 17%);
+}
+
+.prism-axis-x {
+  left: 2%;
+  right: 2%;
+  bottom: 12%;
+  height: 1px;
+  transform-origin: left;
+  animation: prism-axis-in 620ms ease both;
+}
+
+.prism-axis-y {
+  top: 2%;
+  bottom: 2%;
+  left: 8%;
+  width: 1px;
+  transform-origin: bottom;
+  animation: prism-axis-in-y 620ms ease both;
+}
+
+.prism-axis-label {
+  position: absolute;
+  color: #5b7088;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.prism-axis-business {
+  left: 11%;
+  top: 0;
+}
+
+.prism-axis-data {
+  right: 0;
+  bottom: 14%;
+}
+
+.prism-polyhedron {
+  position: absolute;
+  inset: 9% 8% 13% 12%;
+  clip-path: polygon(50% 0, 96% 28%, 82% 88%, 53% 100%, 11% 84%, 0 27%);
+  background: linear-gradient(
+    145deg,
+    rgb(241 252 255 / 94%),
+    rgb(78 131 236 / 82%) 38%,
+    rgb(200 210 230 / 86%) 64%,
+    rgb(112 87 232 / 69%)
+  );
+  filter: drop-shadow(0 30px 35px rgb(54 86 148 / 20%));
+  animation: prism-enter 640ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.prism-facet {
+  position: absolute;
+  inset: 16%;
+  clip-path: polygon(50% 0, 100% 40%, 73% 100%, 9% 83%, 0 25%);
+  border: 1px solid rgb(255 255 255 / 72%);
+  background: rgb(255 255 255 / 12%);
+}
+
+.prism-label {
+  position: absolute;
+  z-index: 2;
+  min-width: 9.5rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid rgb(255 255 255 / 78%);
+  border-radius: 0.7rem;
+  background: rgb(255 255 255 / 72%);
+  box-shadow: 0 14px 34px rgb(37 68 111 / 12%);
+  backdrop-filter: blur(14px);
+  animation: prism-label-in 500ms ease both;
+}
+
+.prism-label small {
+  display: block;
+  color: #5b7088;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+.prism-label b {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+}
+
+.prism-label i {
+  display: inline-block;
+  width: 0.35rem;
+  height: 0.35rem;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.prism-label-one {
+  left: 0;
+  top: 24%;
+  animation-delay: 160ms;
+}
+
+.prism-label-two {
+  right: 0;
+  top: 46%;
+  animation-delay: 240ms;
+}
+
+.prism-label-three {
+  left: 12%;
+  bottom: 2%;
+  animation-delay: 320ms;
+}
+
+@keyframes prism-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes prism-label-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes prism-axis-in {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes prism-axis-in-y {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
 }
 
 .form-grid {
@@ -101,15 +292,15 @@ a {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 0.85rem;
-  background: white;
+  background: var(--surface);
   padding: 0.7rem 0.85rem;
   color: var(--foreground);
   outline: none;
 }
 
 .native-control:focus-visible {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 18%, transparent);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--brand) 18%, transparent);
 }
 
 .admin-table {
@@ -138,6 +329,26 @@ a {
   }
 }
 
+@media (max-width: 767px) {
+  .prism-graphic {
+    width: min(88vw, 360px);
+  }
+
+  .prism-label {
+    min-width: 7.5rem;
+    padding: 0.55rem 0.6rem;
+    backdrop-filter: none;
+  }
+
+  .prism-label small {
+    font-size: 0.55rem;
+  }
+
+  .prism-label b {
+    font-size: 0.68rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -146,5 +357,15 @@ a {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .reveal,
+  .prism-axis,
+  .prism-polyhedron,
+  .prism-label {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
   }
 }
