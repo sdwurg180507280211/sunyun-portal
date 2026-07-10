@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "北京榫合云科技有限公司门户、软件项目线索与管理后台",
+  "description": "北京云医荟科技有限公司医药数字化门户、商务咨询与管理后台",
   "scripts": {
     "dev": "next dev -p 4173",
     "build": "next build",
