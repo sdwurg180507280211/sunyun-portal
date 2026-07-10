@@ -21,3 +21,13 @@ test("motion and color tokens honor accessibility constraints", () => {
   assert.match(css, /\.reveal\[data-state="visible"\]/);
   assert.doesNotMatch(css, /animation:\s*[^;]*infinite/i);
 });
+
+test("marketing page exposes the approved Pharma Prism sections", () => {
+  const source = read("components/marketing/marketing-page.tsx");
+  for (const id of ["audiences", "solutions", "delivery", "scenarios", "about", "contact"]) {
+    assert.match(source, new RegExp(`id=["']${id}["']`));
+  }
+  assert.match(source, /PrismGraphic/);
+  assert.match(source, /让医药数字化/);
+  assert.doesNotMatch(source, /Delivery console|88\s*-|index \* 14|榫合云/);
+});
