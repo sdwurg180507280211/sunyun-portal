@@ -1,8 +1,9 @@
 name: Deploy to Aliyun ECS
 
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
   workflow_dispatch:
 
 concurrency:
@@ -11,6 +12,9 @@ concurrency:
 
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: self-hosted
     steps:
       - name: Preserve production data before checkout cleanup
@@ -41,8 +45,10 @@ jobs:
           # Dockerfile 中的 nextjs 用户固定为 UID/GID 1001；bind mount 会覆盖镜像内目录权限。
           sudo chown -R 1001:1001 /opt/sunyun-portal/data
 
-      - name: Checkout code
+      - name: Checkout verified revision
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Verify deployment configuration
         shell: bash
