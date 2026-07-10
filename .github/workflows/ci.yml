@@ -48,3 +48,7 @@ jobs:
           done
           cat "$RUNNER_TEMP/sunyun-ci.log"
           exit 1
+      - name: Build production Docker image
+        env:
+          DOCKER_BUILDKIT: "1"
+        run: docker build -t sunyun-portal:ci --build-arg NEXT_PUBLIC_SITE_URL=https://example.com .
