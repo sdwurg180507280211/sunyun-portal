@@ -24,6 +24,11 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=8080
 ENV HOSTNAME=0.0.0.0
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null; \
+    apt-get update && apt-get install -y --no-install-recommends fonts-noto-cjk \
+  && rm -rf /var/lib/apt/lists/*
 RUN groupadd --system --gid 1001 nodejs && useradd --system --uid 1001 --gid nodejs nextjs \
   && mkdir -p /app/data && chown -R nextjs:nodejs /app
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
