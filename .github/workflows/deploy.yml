@@ -68,13 +68,36 @@ jobs:
           compose=(docker compose --env-file "$env_file")
           had_previous=0
 
+          restore_previous() {
+            if [ "$had_previous" -ne 1 ]; then
+              echo "No previous image is available for rollback."
+              return 1
+            fi
+            echo "Restoring the previous image."
+            docker tag sunyun-portal:rollback sunyun-portal:latest
+            "${compose[@]}" up -d --force-recreate --no-build sunyun-portal
+            for attempt in $(seq 1 20); do
+              if curl -fsS http://127.0.0.1:8080/api/health; then
+                echo "Previous image restored successfully."
+                return 0
+              fi
+              sleep 3
+            done
+            echo "Previous image could not be verified after rollback."
+            return 1
+          }
+
           if docker image inspect sunyun-portal:latest >/dev/null 2>&1; then
             docker tag sunyun-portal:latest sunyun-portal:rollback
             had_previous=1
           fi
 
           "${compose[@]}" build
-          "${compose[@]}" up -d --remove-orphans
+          if ! "${compose[@]}" up -d --remove-orphans; then
+            "${compose[@]}" logs --tail=200 sunyun-portal || true
+            restore_previous || true
+            exit 1
+          fi
 
           healthy=0
           for attempt in $(seq 1 30); do
@@ -87,18 +110,7 @@ jobs:
 
           if [ "$healthy" -ne 1 ]; then
             "${compose[@]}" logs --tail=200 sunyun-portal || true
-            if [ "$had_previous" -eq 1 ]; then
-              echo "New deployment failed; restoring the previous image."
-              docker tag sunyun-portal:rollback sunyun-portal:latest
-              "${compose[@]}" up -d --force-recreate --no-build sunyun-portal
-              for attempt in $(seq 1 20); do
-                if curl -fsS http://127.0.0.1:8080/api/health; then
-                  echo "Previous image restored successfully."
-                  break
-                fi
-                sleep 3
-              done
-            fi
+            restore_previous || true
             exit 1
           fi
 
