@@ -3,7 +3,8 @@ import {z} from "zod";
 import {verifyPassword} from "@/lib/auth/password";
 import {createSessionToken, SESSION_COOKIE} from "@/lib/auth/session";
 import {env, requireAuthConfig} from "@/lib/config/env";
-import {isSameOrigin} from "@/lib/security/request";
+import {consumeRateLimit} from "@/lib/security/rate-limit";
+import {getClientIp, isSameOrigin} from "@/lib/security/request";
 
 export const runtime = "nodejs";
 
@@ -17,16 +18,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ok: false, message: "请求来源校验失败"}, {status: 403});
   }
 
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > 8 * 1024) {
+    return NextResponse.json({ok: false, message: "登录请求内容过大"}, {status: 413});
+  }
+
+  const rate = consumeRateLimit(`admin-login:${getClientIp(request)}`, 10, 15 * 60 * 1000);
+  if (!rate.allowed) {
+    return NextResponse.json({ok: false, message: "登录尝试过于频繁，请稍后再试"}, {status: 429});
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ok: false, message: "登录请求格式不正确"}, {status: 400});
+  }
+
+  const parsed = loginSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ok: false, message: "用户名或密码格式不正确"}, {status: 400});
+  }
+
   try {
     const config = requireAuthConfig();
-    const parsed = loginSchema.safeParse(await request.json());
-    if (!parsed.success) {
-      return NextResponse.json({ok: false, message: "用户名或密码格式不正确"}, {status: 400});
-    }
-
-    const valid =
-      parsed.data.username === config.username &&
-      verifyPassword(parsed.data.password, config.passwordHash);
+    const validPassword = verifyPassword(parsed.data.password, config.passwordHash);
+    const valid = parsed.data.username === config.username && validPassword;
     if (!valid) {
       return NextResponse.json({ok: false, message: "用户名或密码错误"}, {status: 401});
     }
