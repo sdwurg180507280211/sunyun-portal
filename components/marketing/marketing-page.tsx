@@ -1,6 +1,4 @@
-"use client";
-
-import {Button, Card, Chip} from "@heroui/react";
+import {Card, Chip} from "@heroui/react";
 import {LeadForm} from "@/components/lead-form/lead-form";
 
 const services = [
@@ -26,9 +24,10 @@ const cases = [
   ["报名页与现场管理后台", "支持活动报名、信息校验、现场签到、名单管理和结果导出。"],
 ];
 
-function scrollToForm() {
-  document.querySelector("#contact")?.scrollIntoView({behavior: "smooth", block: "start"});
-}
+const primaryLink =
+  "inline-flex min-h-10 items-center justify-center rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-emerald-600/25";
+const outlineLink =
+  "inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--border)] bg-white px-5 py-2.5 text-sm font-bold transition hover:bg-[var(--surface-secondary)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-emerald-600/20";
 
 export function MarketingPage() {
   return (
@@ -42,7 +41,7 @@ export function MarketingPage() {
           <nav className="hidden items-center gap-7 text-sm text-[var(--muted)] md:flex" aria-label="主导航">
             <a href="#services">服务</a><a href="#process">流程</a><a href="#cases">能力</a><a href="#contact">联系</a>
           </nav>
-          <Button onPress={scrollToForm} size="sm" variant="primary">提交需求</Button>
+          <a className={`${primaryLink} min-h-9 px-4 py-2`} href="#contact">提交需求</a>
         </div>
       </header>
 
@@ -56,8 +55,8 @@ export function MarketingPage() {
             北京榫合云为中小企业、创业团队和项目负责人承接官网、小程序、业务后台、数据看板与内部工具开发。从需求梳理到部署维护，一支团队盯到底。
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <Button onPress={scrollToForm} variant="primary">聊聊你的项目</Button>
-            <Button onPress={() => document.querySelector("#services")?.scrollIntoView({behavior: "smooth"})} variant="outline">查看服务范围</Button>
+            <a className={primaryLink} href="#contact">聊聊你的项目</a>
+            <a className={outlineLink} href="#services">查看服务范围</a>
           </div>
           <div className="mt-12 grid max-w-2xl grid-cols-3 gap-4 border-t border-black/10 pt-7 text-sm">
             <div><strong className="block text-2xl">1 对 1</strong><span className="text-[var(--muted)]">需求负责人</span></div>
