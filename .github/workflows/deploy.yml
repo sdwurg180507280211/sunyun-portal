@@ -13,17 +13,26 @@ jobs:
   deploy:
     runs-on: self-hosted
     steps:
-      - name: Preserve legacy data before checkout cleanup
+      - name: Preserve production data before checkout cleanup
         shell: bash
         run: |
           set -euo pipefail
           sudo mkdir -p /opt/sunyun-portal/data /opt/sunyun-portal/backups
           sudo chown -R "$(id -u):$(id -g)" /opt/sunyun-portal
+
           if [ -f "$GITHUB_WORKSPACE/data/leads.jsonl" ] && [ ! -f /opt/sunyun-portal/data/leads.jsonl ]; then
             cp "$GITHUB_WORKSPACE/data/leads.jsonl" /opt/sunyun-portal/data/leads.jsonl
           fi
-          if [ -f /opt/sunyun-portal/data/sunyun.db ]; then
-            cp /opt/sunyun-portal/data/sunyun.db "/opt/sunyun-portal/backups/sunyun.db.$(date +%Y%m%d-%H%M%S).bak"
+
+          backup_dir="/opt/sunyun-portal/backups/$(date +%Y%m%d-%H%M%S)"
+          mkdir -p "$backup_dir"
+          shopt -s nullglob
+          data_files=(/opt/sunyun-portal/data/sunyun.db*)
+          if [ ${#data_files[@]} -gt 0 ]; then
+            cp -a "${data_files[@]}" "$backup_dir/"
+          fi
+          if [ -f /opt/sunyun-portal/data/leads.jsonl ]; then
+            cp -a /opt/sunyun-portal/data/leads.jsonl "$backup_dir/"
           fi
 
       - name: Checkout code
@@ -33,33 +42,53 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f /opt/sunyun-portal/.env
-          grep -q '^ADMIN_USERNAME=' /opt/sunyun-portal/.env
-          grep -q '^ADMIN_PASSWORD_HASH=' /opt/sunyun-portal/.env
-          grep -q '^SESSION_SECRET=' /opt/sunyun-portal/.env
+          env_file=/opt/sunyun-portal/.env
+          test -f "$env_file"
+          grep -Eq '^ADMIN_USERNAME=.+$' "$env_file"
+          grep -Eq '^ADMIN_PASSWORD_HASH=scrypt:.+:.+$' "$env_file"
+          grep -Eq '^SESSION_SECRET=.{32,}$' "$env_file"
+          docker compose --env-file "$env_file" config --quiet
 
-      - name: Build image
+      - name: Build, deploy, verify, and roll back on failure
         shell: bash
         run: |
           set -euo pipefail
-          docker compose --env-file /opt/sunyun-portal/.env build
+          env_file=/opt/sunyun-portal/.env
+          compose=(docker compose --env-file "$env_file")
+          had_previous=0
 
-      - name: Deploy
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker compose --env-file /opt/sunyun-portal/.env up -d --remove-orphans
-          docker image prune -f
+          if docker image inspect sunyun-portal:latest >/dev/null 2>&1; then
+            docker tag sunyun-portal:latest sunyun-portal:rollback
+            had_previous=1
+          fi
 
-      - name: Health check
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in $(seq 1 20); do
+          "${compose[@]}" build
+          "${compose[@]}" up -d --remove-orphans
+
+          healthy=0
+          for attempt in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8080/api/health; then
-              exit 0
+              healthy=1
+              break
             fi
             sleep 3
           done
-          docker compose --env-file /opt/sunyun-portal/.env logs --tail=200 sunyun-portal
-          exit 1
+
+          if [ "$healthy" -ne 1 ]; then
+            "${compose[@]}" logs --tail=200 sunyun-portal || true
+            if [ "$had_previous" -eq 1 ]; then
+              echo "New deployment failed; restoring the previous image."
+              docker tag sunyun-portal:rollback sunyun-portal:latest
+              "${compose[@]}" up -d --force-recreate --no-build sunyun-portal
+              for attempt in $(seq 1 20); do
+                if curl -fsS http://127.0.0.1:8080/api/health; then
+                  echo "Previous image restored successfully."
+                  break
+                fi
+                sleep 3
+              done
+            fi
+            exit 1
+          fi
+
+          docker image prune -f
