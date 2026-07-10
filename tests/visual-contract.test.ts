@@ -24,10 +24,32 @@ test("motion and color tokens honor accessibility constraints", () => {
 
 test("marketing page exposes the approved Pharma Prism sections", () => {
   const source = read("components/marketing/marketing-page.tsx");
-  for (const id of ["audiences", "solutions", "delivery", "scenarios", "about", "contact"]) {
+  for (const id of ["top", "audiences", "solutions", "delivery", "scenarios", "about", "contact"]) {
     assert.match(source, new RegExp(`id=["']${id}["']`));
   }
+  for (const collection of [
+    "navigation",
+    "deliverables",
+    "audiences",
+    "solutions",
+    "deliverySteps",
+    "scenarios",
+    "trustPrinciples",
+  ]) {
+    assert.match(source, new RegExp(`${collection}\\.map\\(`));
+  }
   assert.match(source, /PrismGraphic/);
+  assert.match(source, /<Reveal\b/);
+  assert.match(source, /<LeadForm\s*\/>/);
+  assert.match(source, /brand\.disclaimer/);
   assert.match(source, /让医药数字化/);
   assert.doesNotMatch(source, /Delivery console|88\s*-|index \* 14|榫合云/);
+});
+
+test("marketing links constrain motion to reduced-motion-safe transforms", () => {
+  const source = read("components/marketing/marketing-page.tsx");
+  assert.match(source, /transition-transform/);
+  assert.match(source, /motion-safe:hover:-translate-y-0\.5/);
+  assert.doesNotMatch(source, /\btransition(?!-)\b/);
+  assert.doesNotMatch(source, /hover:brightness-/);
 });

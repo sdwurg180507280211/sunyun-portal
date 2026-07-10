@@ -13,11 +13,11 @@ import {Reveal} from "@/components/marketing/reveal";
 import {brand} from "@/lib/brand";
 
 const primaryLink =
-  "inline-flex min-h-11 items-center justify-center rounded-lg bg-[var(--brand)] px-5 py-3 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(23,88,213,.2)] transition hover:-translate-y-0.5 hover:brightness-95 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-600/25";
+  "inline-flex min-h-11 items-center justify-center rounded-lg bg-[var(--brand)] px-5 py-3 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(23,88,213,.2)] transition-transform motion-safe:hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-600/25";
 const secondaryLink =
-  "inline-flex min-h-11 items-center justify-center rounded-lg border border-[var(--border)] bg-white/80 px-5 py-3 text-sm font-extrabold text-[var(--foreground)] transition hover:border-blue-300 hover:bg-white focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-600/20";
+  "inline-flex min-h-11 items-center justify-center rounded-lg border border-[var(--border)] bg-white/80 px-5 py-3 text-sm font-extrabold text-[var(--foreground)] hover:border-blue-300 hover:bg-white focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-600/20";
 const navigationLink =
-  "rounded-sm transition hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-600/20";
+  "rounded-sm hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-600/20";
 
 export function MarketingPage() {
   return (
