@@ -14,6 +14,7 @@ const consultationOptions = [
   "隐私与个人信息",
 ] as const;
 
+const fieldLabelClass = "text-sm font-bold text-white";
 type FormState = {type: "idle" | SubmitState["type"]; message: string};
 
 export function LeadForm() {
@@ -44,23 +45,23 @@ export function LeadForm() {
             {consultationOptions.map((option) => <option key={option}>{option}</option>)}
           </select>
         </div>
-        <TextField isRequired name="companyName"><Label>单位名称</Label><Input placeholder="公司或机构名称" /></TextField>
-        <TextField isRequired name="contactName"><Label>联系人</Label><Input placeholder="怎么称呼您" /></TextField>
-        <TextField isRequired name="phone"><Label>联系电话</Label><Input inputMode="tel" placeholder="手机或座机" /></TextField>
+        <TextField isRequired name="companyName"><Label className={fieldLabelClass}>单位名称</Label><Input placeholder="公司或机构名称" /></TextField>
+        <TextField isRequired name="contactName"><Label className={fieldLabelClass}>联系人</Label><Input placeholder="怎么称呼您" /></TextField>
+        <TextField isRequired name="phone"><Label className={fieldLabelClass}>联系电话</Label><Input inputMode="tel" placeholder="手机或座机" /></TextField>
       </div>
       <TextField isRequired minLength={10} name="description">
-        <Label>业务场景与目标</Label>
+        <Label className={fieldLabelClass}>业务场景与目标</Label>
         <TextArea rows={6} placeholder="请简要说明当前流程、主要使用角色、已有系统或数据条件，以及希望改善的环节。" />
       </TextField>
       <p className="rounded-lg border border-blue-200/25 bg-blue-400/10 p-3 text-sm leading-6 text-slate-200">请勿填写患者、受试者、病历、处方、身份证件或其他敏感个人信息。</p>
       <details className="rounded-xl border border-white/15 bg-white/5 p-4">
         <summary className="cursor-pointer font-bold">补充信息（选填）</summary>
         <div className="form-grid mt-4">
-          <TextField name="wechat"><Label>微信</Label><Input /></TextField>
-          <TextField name="city"><Label>所在地区</Label><Input /></TextField>
-          <TextField name="expectedDate"><Label>期望启动时间</Label><Input /></TextField>
-          <TextField name="scale"><Label>预期使用范围</Label><Input /></TextField>
-          <TextField name="budget"><Label>预算情况</Label><Input /></TextField>
+          <TextField name="wechat"><Label className={fieldLabelClass}>微信</Label><Input /></TextField>
+          <TextField name="city"><Label className={fieldLabelClass}>所在地区</Label><Input /></TextField>
+          <TextField name="expectedDate"><Label className={fieldLabelClass}>期望启动时间</Label><Input /></TextField>
+          <TextField name="scale"><Label className={fieldLabelClass}>预期使用范围</Label><Input /></TextField>
+          <TextField name="budget"><Label className={fieldLabelClass}>预算情况</Label><Input /></TextField>
         </div>
       </details>
       <input aria-hidden="true" autoComplete="off" className="hidden" name="website" tabIndex={-1} />
