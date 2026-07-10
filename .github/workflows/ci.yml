@@ -24,7 +24,7 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: https://example.com
           NEXT_TELEMETRY_DISABLED: "1"
-      - name: Verify standalone SQLite runtime
+      - name: Verify standalone consultation workflow
         shell: bash
         run: |
           set -euo pipefail
@@ -32,22 +32,57 @@ jobs:
           mkdir -p .next/standalone/.next
           cp -R .next/static .next/standalone/.next/static
           cp -R public .next/standalone/public
+          rm -f "$RUNNER_TEMP/yunyihui-ci.db" "$RUNNER_TEMP/yunyihui-ci.db-wal" "$RUNNER_TEMP/yunyihui-ci.db-shm" "$RUNNER_TEMP/yunyihui-cookie.txt"
           PORT=8080 \
           HOSTNAME=127.0.0.1 \
-          DATABASE_PATH="$RUNNER_TEMP/sunyun-ci.db" \
+          DATABASE_PATH="$RUNNER_TEMP/yunyihui-ci.db" \
+          LEGACY_LEADS_PATH="$RUNNER_TEMP/yunyihui-no-legacy.jsonl" \
+          ADMIN_USERNAME=admin \
+          ADMIN_PASSWORD_HASH='scrypt:00112233445566778899aabbccddeeff:565859c6cb1a6a568a0ccb50adf101c46da690398a3144aaf721d14fccccafb8a6d01330bd7b58408518d2d5fad262a2378104f5966be6fd4c8f9b0dd8192569' \
+          SESSION_SECRET=0123456789abcdef0123456789abcdef \
           COOKIE_SECURE=0 \
+          NEXT_PUBLIC_SITE_URL=http://127.0.0.1:8080 \
           NEXT_TELEMETRY_DISABLED=1 \
-          node .next/standalone/server.js > "$RUNNER_TEMP/sunyun-ci.log" 2>&1 &
+          node .next/standalone/server.js > "$RUNNER_TEMP/yunyihui-ci.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          ready=0
           for attempt in $(seq 1 20); do
-            if curl -fsS http://127.0.0.1:8080/api/health; then
-              exit 0
+            if curl -fsS http://127.0.0.1:8080/api/health > "$RUNNER_TEMP/health.json"; then
+              ready=1
+              break
             fi
             sleep 1
           done
-          cat "$RUNNER_TEMP/sunyun-ci.log"
-          exit 1
+          if [ "$ready" -ne 1 ]; then
+            cat "$RUNNER_TEMP/yunyihui-ci.log"
+            exit 1
+          fi
+
+          grep -q '"ok":true' "$RUNNER_TEMP/health.json"
+          grep -q '"service":"yunyihui-portal"' "$RUNNER_TEMP/health.json"
+          curl -fsS http://127.0.0.1:8080/ >/dev/null
+          curl -fsS http://127.0.0.1:8080/privacy >/dev/null
+          curl -fsS http://127.0.0.1:8080/opengraph-image >/dev/null
+
+          lead_response=$(curl -fsS -H 'content-type: application/json' \
+            -d '{"serviceType":"医药业务系统","companyName":"自动化验收示例机构","contactName":"测试联系人","phone":"13800138000","description":"希望梳理客户协同流程并建设可持续迭代的医药业务系统。","source":"homepage-pharma-prism","website":"","consent":true}' \
+            http://127.0.0.1:8080/api/leads)
+          printf '%s' "$lead_response" | grep -q '"ok":true'
+          printf '%s' "$lead_response" | grep -q '"message":"已收到您的咨询"'
+          printf '%s' "$lead_response" | grep -q '"id":"SY-'
+
+          login_response=$(curl -fsS -c "$RUNNER_TEMP/yunyihui-cookie.txt" -H 'content-type: application/json' \
+            -d '{"username":"admin","password":"A-strong-admin-password-2026"}' \
+            http://127.0.0.1:8080/api/admin/session)
+          printf '%s' "$login_response" | grep -q '"ok":true'
+
+          leads_response=$(curl -fsS -b "$RUNNER_TEMP/yunyihui-cookie.txt" --get \
+            --data-urlencode 'q=自动化验收示例机构' \
+            http://127.0.0.1:8080/api/leads)
+          printf '%s' "$leads_response" | grep -q '自动化验收示例机构'
+          printf '%s' "$leads_response" | grep -q '"total":1'
       - name: Build production Docker image
         env:
           DOCKER_BUILDKIT: "1"
