@@ -17,11 +17,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          runner_uid="$(id -u)"
+          runner_gid="$(id -g)"
           sudo mkdir -p /opt/sunyun-portal/data /opt/sunyun-portal/backups
-          sudo chown -R "$(id -u):$(id -g)" /opt/sunyun-portal
+          sudo chown "$runner_uid:$runner_gid" /opt/sunyun-portal /opt/sunyun-portal/backups
 
           if [ -f "$GITHUB_WORKSPACE/data/leads.jsonl" ] && [ ! -f /opt/sunyun-portal/data/leads.jsonl ]; then
-            cp "$GITHUB_WORKSPACE/data/leads.jsonl" /opt/sunyun-portal/data/leads.jsonl
+            sudo cp "$GITHUB_WORKSPACE/data/leads.jsonl" /opt/sunyun-portal/data/leads.jsonl
           fi
 
           backup_dir="/opt/sunyun-portal/backups/$(date +%Y%m%d-%H%M%S)"
@@ -29,11 +31,15 @@ jobs:
           shopt -s nullglob
           data_files=(/opt/sunyun-portal/data/sunyun.db*)
           if [ ${#data_files[@]} -gt 0 ]; then
-            cp -a "${data_files[@]}" "$backup_dir/"
+            sudo cp -a "${data_files[@]}" "$backup_dir/"
           fi
           if [ -f /opt/sunyun-portal/data/leads.jsonl ]; then
-            cp -a /opt/sunyun-portal/data/leads.jsonl "$backup_dir/"
+            sudo cp -a /opt/sunyun-portal/data/leads.jsonl "$backup_dir/"
           fi
+          sudo chown -R "$runner_uid:$runner_gid" "$backup_dir"
+
+          # Dockerfile 中的 nextjs 用户固定为 UID/GID 1001；bind mount 会覆盖镜像内目录权限。
+          sudo chown -R 1001:1001 /opt/sunyun-portal/data
 
       - name: Checkout code
         uses: actions/checkout@v4
