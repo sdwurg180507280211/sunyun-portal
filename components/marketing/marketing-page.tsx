@@ -49,7 +49,7 @@ export function MarketingPage() {
         <div>
           <Chip color="accent">企业软件定制 · 轻量数字化交付伙伴</Chip>
           <h1 className="mt-7 max-w-4xl text-[clamp(3rem,7vw,6.4rem)] font-[780] leading-[.94] tracking-[-.065em]">
-            把业务需求，<br /><span className="text-[var(--accent)]">做成真正能上线的系统。2</span>
+            把业务需求，<br /><span className="text-[var(--accent)]">做成真正能上线的系统。</span>
           </h1>
           <p className="mt-8 max-w-2xl text-lg leading-8 text-[var(--muted)]">
             北京榫合云为中小企业、创业团队和项目负责人承接官网、小程序、业务后台、数据看板与内部工具开发。从需求梳理到部署维护，一支团队盯到底。

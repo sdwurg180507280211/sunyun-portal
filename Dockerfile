@@ -5,9 +5,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null; \
     apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    npm install --no-audit --no-fund --registry https://registry.npmmirror.com
+    npm ci --no-audit --no-fund --registry https://registry.npmmirror.com
 
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app

@@ -31,11 +31,37 @@ jobs:
 
           backup_dir="/opt/sunyun-portal/backups/$(date +%Y%m%d-%H%M%S)"
           mkdir -p "$backup_dir"
-          shopt -s nullglob
-          data_files=(/opt/sunyun-portal/data/sunyun.db*)
-          if [ ${#data_files[@]} -gt 0 ]; then
-            cp -a "${data_files[@]}" "$backup_dir/"
+
+          # SQLite 一致性备份：优先用运行中的旧容器做在线备份（backup API 在 WAL 下也能得到单一时间点快照）。
+          # 仅当没有运行容器（此时库静止、直接复制即一致）或在线备份失败时，才回退到文件复制。
+          if [ -f /opt/sunyun-portal/data/sunyun.db ]; then
+            if docker ps --filter 'name=^sunyun-portal$' --filter 'status=running' --format '{{.Names}}' | grep -q '^sunyun-portal$'; then
+              online_name="sunyun.db.online-$(date +%Y%m%d-%H%M%S).bak"
+              if docker exec -e BK="/app/data/$online_name" sunyun-portal \
+                   node -e 'const D=require("better-sqlite3");const db=new D("/app/data/sunyun.db",{readonly:true,fileMustExist:true});db.backup(process.env.BK).then(()=>{db.close();process.exit(0)}).catch((e)=>{console.error(e);process.exit(1)})'; then
+                mv "/opt/sunyun-portal/data/$online_name" "$backup_dir/sunyun.db"
+                echo "SQLite online consistent backup captured."
+              else
+                echo "WARNING: online backup failed; falling back to file copy."
+                rm -f "/opt/sunyun-portal/data/$online_name" 2>/dev/null || true
+                cp -a /opt/sunyun-portal/data/sunyun.db "$backup_dir/" 2>/dev/null || true
+                shopt -s nullglob
+                for wal in /opt/sunyun-portal/data/sunyun.db-wal /opt/sunyun-portal/data/sunyun.db-shm; do
+                  cp -a "$wal" "$backup_dir/" 2>/dev/null || true
+                done
+                shopt -u nullglob
+              fi
+            else
+              # 无运行容器：数据库处于静止状态，直接复制即为一致快照。
+              shopt -s nullglob
+              for f in /opt/sunyun-portal/data/sunyun.db /opt/sunyun-portal/data/sunyun.db-wal /opt/sunyun-portal/data/sunyun.db-shm; do
+                cp -a "$f" "$backup_dir/" 2>/dev/null || true
+              done
+              shopt -u nullglob
+              echo "No running container; copied quiescent database files."
+            fi
           fi
+
           if [ -f /opt/sunyun-portal/data/leads.jsonl ]; then
             cp -a /opt/sunyun-portal/data/leads.jsonl "$backup_dir/"
           fi
