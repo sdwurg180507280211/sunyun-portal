@@ -1,34 +1,117 @@
-# 部署到阿里云 ECS（GitHub 自托管 Runner）
-# 触发：push 到 main，或手动 workflow_dispatch
-# 前提（ECS 一次性准备，见 docs/ECS_SETUP.md）：
-#   1. ECS 已装 Docker + compose 插件
-#   2. 已注册 self-hosted runner（以 deployer 用户运行）
-#   3. /opt/sunyun-portal/.env 已存在，含 SUNYUN_ADMIN_TOKEN 与 SUNYUN_PORT
-# 特点：runner 主动连 GitHub 拉代码，无需 GitHub 远程 SSH 进服务器，22 端口可长期对 0.0.0.0/0 关闭。
-
 name: Deploy to Aliyun ECS
 
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
   workflow_dispatch:
+
+concurrency:
+  group: sunyun-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: self-hosted
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy with Docker Compose
+      - name: Preserve production data before checkout cleanup
+        shell: bash
         run: |
           set -euo pipefail
-          docker compose --env-file /opt/sunyun-portal/.env down || true
-          docker compose --env-file /opt/sunyun-portal/.env up -d --build
-          docker image prune -f
+          mkdir -p /opt/sunyun-portal/data /opt/sunyun-portal/backups
+          test -w /opt/sunyun-portal/data
+          test -w /opt/sunyun-portal/backups
 
-      - name: Health check
+          if [ -f "$GITHUB_WORKSPACE/data/leads.jsonl" ] && [ ! -f /opt/sunyun-portal/data/leads.jsonl ]; then
+            cp "$GITHUB_WORKSPACE/data/leads.jsonl" /opt/sunyun-portal/data/leads.jsonl
+          fi
+
+          backup_dir="/opt/sunyun-portal/backups/$(date +%Y%m%d-%H%M%S)"
+          mkdir -p "$backup_dir"
+          shopt -s nullglob
+          data_files=(/opt/sunyun-portal/data/sunyun.db*)
+          if [ ${#data_files[@]} -gt 0 ]; then
+            cp -a "${data_files[@]}" "$backup_dir/"
+          fi
+          if [ -f /opt/sunyun-portal/data/leads.jsonl ]; then
+            cp -a /opt/sunyun-portal/data/leads.jsonl "$backup_dir/"
+          fi
+
+      - name: Checkout verified revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Verify deployment configuration
+        shell: bash
         run: |
-          sleep 3
-          curl -fsS http://127.0.0.1:8080/api/health || exit 1
+          set -euo pipefail
+          env_file=/opt/sunyun-portal/.env
+          test -f "$env_file"
+          grep -Eq '^ADMIN_USERNAME=.+$' "$env_file"
+          grep -Eq '^ADMIN_PASSWORD_HASH=scrypt:.+:.+$' "$env_file"
+          grep -Eq '^SESSION_SECRET=.{32,}$' "$env_file"
+          export SUNYUN_RUN_UID="$(id -u)"
+          export SUNYUN_RUN_GID="$(id -g)"
+          docker compose --env-file "$env_file" config --quiet
+
+      - name: Build, deploy, verify, and roll back on failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file=/opt/sunyun-portal/.env
+          export SUNYUN_RUN_UID="$(id -u)"
+          export SUNYUN_RUN_GID="$(id -g)"
+          compose=(docker compose --env-file "$env_file")
+          had_previous=0
+
+          restore_previous() {
+            if [ "$had_previous" -ne 1 ]; then
+              echo "No previous image is available for rollback."
+              return 1
+            fi
+            echo "Restoring the previous image."
+            docker tag sunyun-portal:rollback sunyun-portal:latest
+            "${compose[@]}" up -d --force-recreate --no-build sunyun-portal
+            for attempt in $(seq 1 20); do
+              if curl -fsS http://127.0.0.1:8080/api/health; then
+                echo "Previous image restored successfully."
+                return 0
+              fi
+              sleep 3
+            done
+            echo "Previous image could not be verified after rollback."
+            return 1
+          }
+
+          if docker image inspect sunyun-portal:latest >/dev/null 2>&1; then
+            docker tag sunyun-portal:latest sunyun-portal:rollback
+            had_previous=1
+          fi
+
+          "${compose[@]}" build
+          if ! "${compose[@]}" up -d --remove-orphans; then
+            "${compose[@]}" logs --tail=200 sunyun-portal || true
+            restore_previous || true
+            exit 1
+          fi
+
+          healthy=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/api/health; then
+              healthy=1
+              break
+            fi
+            sleep 3
+          done
+
+          if [ "$healthy" -ne 1 ]; then
+            "${compose[@]}" logs --tail=200 sunyun-portal || true
+            restore_previous || true
+            exit 1
+          fi
+
+          docker image prune -f

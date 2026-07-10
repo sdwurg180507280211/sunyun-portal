@@ -1,11 +1,13 @@
 node_modules
+.next
 dist
+release
 .git
 .github
 docs
-scripts
 *.log
 .env
 .env.*
-data/leads.jsonl
+data/*
+backups
 .DS_Store
