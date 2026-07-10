@@ -1,10 +1,11 @@
 import {NextRequest, NextResponse} from "next/server";
+import {SESSION_COOKIE, verifySessionToken} from "@/lib/auth/session";
+import {leadCopy} from "@/lib/brand";
+import {requireAuthConfig} from "@/lib/config/env";
 import {createLead, listLeads} from "@/lib/db/lead-repository";
-import {parseLeadInput} from "@/lib/validation/lead";
 import {consumeRateLimit} from "@/lib/security/rate-limit";
 import {getClientIp} from "@/lib/security/request";
-import {SESSION_COOKIE, verifySessionToken} from "@/lib/auth/session";
-import {requireAuthConfig} from "@/lib/config/env";
+import {parseLeadInput} from "@/lib/validation/lead";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     );
   }
   if (parsed.data.website) {
-    return NextResponse.json({ok: true, message: "需求已提交"}, {status: 201});
+    return NextResponse.json({ok: true, message: leadCopy.accepted}, {status: 201});
   }
 
   try {
@@ -63,14 +64,14 @@ export async function POST(request: NextRequest) {
       {
         ok: true,
         id: lead.id,
-        message: "需求已进入榫合云项目池",
-        nextStep: "1 个工作日内完成需求澄清并给出执行建议",
+        message: leadCopy.accepted,
+        nextStep: leadCopy.nextStep,
       },
       {status: 201},
     );
   } catch (error) {
     console.error("Lead submission failed", error);
-    return NextResponse.json({ok: false, message: "服务器暂时无法保存需求"}, {status: 500});
+    return NextResponse.json({ok: false, message: "服务器暂时无法保存咨询"}, {status: 500});
   }
 }
 
