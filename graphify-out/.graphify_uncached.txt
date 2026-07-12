@@ -1,6 +1,0 @@
-/Users/edy/ideaProjects/sunyun-portal/.github/workflows/ci.yml
-/Users/edy/ideaProjects/sunyun-portal/.github/workflows/deploy.yml
-/Users/edy/ideaProjects/sunyun-portal/README.md
-/Users/edy/ideaProjects/sunyun-portal/docker-compose.yml
-/Users/edy/ideaProjects/sunyun-portal/docs/ARCHITECTURE.md
-/Users/edy/ideaProjects/sunyun-portal/docs/ECS_SETUP.md
