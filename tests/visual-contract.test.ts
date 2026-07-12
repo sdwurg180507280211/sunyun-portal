@@ -48,6 +48,36 @@ test("marketing page exposes the approved Pharma Prism sections", () => {
   assert.doesNotMatch(source, /Delivery console|88\s*-|index \* 14|榫合云/);
 });
 
+test("hero keeps each approved claim sentence on one line across target viewports", () => {
+  const source = read("components/marketing/marketing-page.tsx");
+  const css = read("app/globals.css");
+
+  assert.match(source, /lg:grid-cols-\[7fr_5fr\]/);
+  assert.doesNotMatch(source, /lg:grid-cols-\[1\.05fr_\.95fr\]/);
+  assert.match(source, /px-4[^"\n]*sm:px-8[^"\n]*xl:px-\[max\(8vw,2rem\)\]/);
+  assert.doesNotMatch(source, /lg:px-\[max\(8vw,2rem\)\]/);
+  assert.match(source, /text-\[clamp\(2\.5rem,5vw,4\.75rem\)\]/);
+  assert.match(source, /lg:text-\[clamp\(4rem,5vw,4\.75rem\)\]/);
+
+  const heading = source.match(/<h1\b[\s\S]*?<\/h1>/)?.[0] ?? "";
+  const claimLines = heading.match(/<span\b[^>]*className="[^"]*\bblock\b[^"]*\bwhitespace-nowrap\b[^"]*"[^>]*>/g) ?? [];
+  assert.equal(claimLines.length, 2);
+  assert.match(heading, />\s*让医药数字化，\s*<\/span>/);
+  assert.match(heading, />\s*落到真实业务里。\s*<\/span>/);
+  assert.doesNotMatch(heading, /<br\s*\/>/);
+  assert.match(css, /\.prism-graphic\s*\{[^}]*width:\s*min\(100%,\s*470px\)/s);
+});
+
+test("delivery steps remain a readable single column until the large breakpoint", () => {
+  const source = read("components/marketing/marketing-page.tsx");
+  const deliveryStepsBlock = source.match(/<div className="[^"]*">\s*\{deliverySteps\.map[\s\S]*?<\/div>/)?.[0] ?? "";
+
+  assert.match(deliveryStepsBlock, /lg:grid-cols-4/);
+  assert.doesNotMatch(deliveryStepsBlock, /md:grid-cols-4/);
+  assert.match(deliveryStepsBlock, /border-b/);
+  assert.match(deliveryStepsBlock, /lg:border-r/);
+});
+
 test("marketing links constrain motion to reduced-motion-safe transforms", () => {
   const source = read("components/marketing/marketing-page.tsx");
   const disallowedTransition = /\btransition-(?!(?:transform|opacity)\b)[^\s"'`]+/;

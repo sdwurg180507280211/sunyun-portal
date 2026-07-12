@@ -22,3 +22,22 @@ test("lead form links privacy notice and warns against sensitive submissions", (
   assert.match(source, /患者、受试者、病历、处方/);
   assert.match(source, /brand\.consultationSource/);
 });
+
+test("lead form controls meet touch-target and dark-surface contrast contracts", () => {
+  const source = readFileSync(resolve(root, "components/lead-form/lead-form.tsx"), "utf8");
+  const inputs = source.match(/<Input\b[^>]*\/>/g) ?? [];
+  const labels = source.match(/<Label\b[^>]*>/g) ?? [];
+  const submitButton = source.match(/<Button\b[^>]*type="submit"[^>]*>/)?.[0] ?? "";
+  const summary = source.match(/<summary\b[^>]*>/)?.[0] ?? "";
+
+  assert.equal(inputs.length, 8);
+  for (const input of inputs) assert.match(input, /className="[^"]*\bmin-h-11\b[^"]*"/);
+
+  assert.equal(labels.length, 9);
+  for (const label of labels) assert.match(label, /className="[^"]*\btext-slate-200\b[^"]*"/);
+
+  for (const utility of ["min-h-11"]) assert.match(submitButton, new RegExp(`\\b${utility}\\b`));
+  for (const utility of ["min-h-11", "flex", "items-center"]) {
+    assert.match(summary, new RegExp(`\\b${utility}\\b`));
+  }
+});

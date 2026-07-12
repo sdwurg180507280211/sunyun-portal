@@ -1,5 +1,23 @@
 import type {NextConfig} from "next";
 
+export function buildContentSecurityPolicy(nodeEnv: string | undefined) {
+  const scriptSources = ["'self'", "'unsafe-inline'"];
+  if (nodeEnv === "development") scriptSources.push("'unsafe-eval'");
+
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    "style-src 'self' 'unsafe-inline'",
+    `script-src ${scriptSources.join(" ")}`,
+    "connect-src 'self'",
+  ].join("; ");
+}
+
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
@@ -19,8 +37,7 @@ const nextConfig: NextConfig = {
           {key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()"},
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'",
+            value: buildContentSecurityPolicy(process.env.NODE_ENV),
           },
         ],
       },
