@@ -57,7 +57,7 @@ export function AdminDashboard({username}: {username: string}) {
   }
 
   const csv = useMemo(() => {
-    const headers = ["编号", "创建时间", "项目类型", "客户单位", "联系人", "电话", "微信", "城市", "期望上线", "规模", "预算", "状态", "需求描述"];
+    const headers = ["编号", "创建时间", "咨询方向", "单位名称", "联系人", "电话", "微信", "城市", "期望上线", "规模", "预算", "状态", "需求描述"];
     const rows = leads.map((lead) => [lead.id, lead.createdAt, lead.serviceType, lead.companyName, lead.contactName, lead.phone, lead.wechat, lead.city, lead.expectedDate, lead.scale, lead.budget, statusText[lead.status], lead.description]);
     return [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
   }, [leads]);
@@ -65,13 +65,13 @@ export function AdminDashboard({username}: {username: string}) {
   function exportCsv() {
     const blob = new Blob(["\uFEFF", csv], {type: "text/csv;charset=utf-8"});
     const url = URL.createObjectURL(blob); const anchor = document.createElement("a");
-    anchor.href = url; anchor.download = `sunyun-leads-${new Date().toISOString().slice(0, 10)}.csv`; anchor.click(); URL.revokeObjectURL(url);
+    anchor.href = url; anchor.download = `yunyihui-leads-${new Date().toISOString().slice(0, 10)}.csv`; anchor.click(); URL.revokeObjectURL(url);
   }
 
   return (
     <main className="site-shell min-h-screen py-10">
       <header className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-        <div><p className="section-kicker">Lead workspace</p><h1 className="mt-2 text-4xl font-bold tracking-tight">软件项目线索后台</h1><p className="mt-2 text-sm text-[var(--muted)]">当前管理员：{username}</p></div>
+        <div><p className="section-kicker">Business inquiry workspace</p><h1 className="mt-2 text-4xl font-bold tracking-tight">医药数字化商务咨询后台</h1><p className="mt-2 text-sm text-[var(--muted)]">当前管理员：{username}</p></div>
         <div className="flex gap-2"><Button onPress={exportCsv} variant="outline">导出 CSV</Button><Button onPress={logout} variant="tertiary">退出</Button></div>
       </header>
 
@@ -92,7 +92,7 @@ export function AdminDashboard({username}: {username: string}) {
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-[var(--border)] bg-white">
         <table className="admin-table">
-          <thead><tr><th>时间 / 编号</th><th>客户</th><th>项目与需求</th><th>预算 / 时间</th><th>状态</th></tr></thead>
+          <thead><tr><th>时间 / 编号</th><th>客户</th><th>咨询方向与业务场景</th><th>预算 / 时间</th><th>状态</th></tr></thead>
           <tbody>{leads.map((lead) => <tr key={lead.id}>
             <td className="min-w-44"><strong>{new Date(lead.createdAt).toLocaleString("zh-CN")}</strong><br /><span className="text-xs text-[var(--muted)]">{lead.id}</span></td>
             <td className="min-w-48"><strong>{lead.companyName || "未填写单位"}</strong><br />{lead.contactName} · {lead.phone}<br /><span className="text-xs text-[var(--muted)]">{lead.wechat || "无微信"} · {lead.city || "未填城市"}</span></td>

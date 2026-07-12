@@ -31,7 +31,7 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-md" variant="tertiary">
-      <Card.Header><Card.Title className="text-2xl">软件项目线索后台</Card.Title><Card.Description>使用管理员账号登录，Cookie 仅由服务端读取。</Card.Description></Card.Header>
+      <Card.Header><Card.Title className="text-2xl">云医荟商务咨询后台</Card.Title><Card.Description>使用管理员账号登录，Cookie 仅由服务端读取。</Card.Description></Card.Header>
       <Card.Content>
         <Form className="grid gap-4" onSubmit={onSubmit}>
           <TextField isRequired name="username"><Label>用户名</Label><Input autoComplete="username" /></TextField>
