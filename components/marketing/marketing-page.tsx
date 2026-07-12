@@ -91,6 +91,9 @@ export function MarketingPage() {
               </p>
             ))}
           </div>
+          <p className="site-shell border-t border-[var(--border)] py-3 text-xs leading-6 text-[var(--muted)]">
+            这些是能力表达，不是认证标志；若具体项目不包含其中某项，以实际合同与方案为准。
+          </p>
         </section>
 
         <section className="site-shell scroll-mt-20 py-24" id="audiences">
@@ -241,6 +244,9 @@ export function MarketingPage() {
                 </article>
               ))}
             </div>
+            <p className="mt-6 text-sm leading-7 text-[var(--muted)]">
+              相关能力可按项目需求设计，具体措施以方案与验收结果为准。
+            </p>
           </div>
         </section>
 

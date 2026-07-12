@@ -1,10 +1,25 @@
 import type {Metadata} from "next";
 import {brand} from "@/lib/brand";
 
-export const metadata: Metadata = {title: "隐私说明", description: `${brand.legalName}商务咨询表单隐私说明`};
+const privacyTitle = `隐私说明｜${brand.shortName}`;
+const privacyDescription = `${brand.legalName}商务咨询表单隐私说明`;
+
+export const metadata: Metadata = {
+  title: {absolute: privacyTitle},
+  description: privacyDescription,
+  alternates: {canonical: "/privacy"},
+  openGraph: {
+    type: "website",
+    locale: "zh_CN",
+    siteName: brand.shortName,
+    title: privacyTitle,
+    description: privacyDescription,
+    url: "/privacy",
+  },
+};
 
 const sections = [
-  {title: "我们处理的信息", body: "您主动填写的咨询方向、单位名称、联系人、联系电话及选填信息；系统还会记录 IP 地址和浏览器 User-Agent，用于防滥用、安全防护与问题排查。"},
+  {title: "我们处理的信息", body: "您主动填写的必填信息包括咨询方向、单位名称、联系人、联系电话、业务场景与目标；选填信息包括微信、所在地区、期望启动时间、预期使用范围、预算情况。系统还会记录 IP 地址和浏览器 User-Agent，用于防滥用、安全防护与问题排查。"},
   {title: "处理目的", body: "用于回复本次商务咨询、评估项目范围、沟通实施条件并保障表单安全。请勿提交患者、受试者、病历、处方、身份证件或其他敏感个人信息。"},
   {title: "保存期限", body: "未建立合作的咨询信息原则上在最后一次沟通后 12 个月内删除或匿名化；已建立合作的，按照合同和适用要求处理。"},
   {title: "共享与委托处理", body: "我们不出售咨询信息。因托管、运维或履行项目确需第三方处理时，将结合实际情况说明并采取合同与安全措施。"},

@@ -8,7 +8,7 @@ const requiredText = (max: number, message: string) =>
   );
 
 export const leadSchema = z.object({
-  serviceType: z.string().trim().min(1, "请选择项目类型").max(60),
+  serviceType: requiredText(60, "请选择咨询方向"),
   companyName: requiredText(80, "请填写单位名称"),
   contactName: z.string().trim().min(1, "请填写联系人").max(40),
   phone: z

@@ -15,6 +15,17 @@ test("lead validation accepts an institutional pharma inquiry", () => {
   assert.equal(parseLeadInput(completeLead).success, true);
 });
 
+test("lead validation names the missing consultation direction precisely", () => {
+  const {serviceType: _serviceType, ...withoutServiceType} = completeLead;
+  for (const input of [withoutServiceType, {...completeLead, serviceType: "   "}]) {
+    const result = parseLeadInput(input);
+    assert.equal(result.success, false);
+    if (result.success) continue;
+    const serviceTypeIssue = result.error.issues.find((issue) => issue.path[0] === "serviceType");
+    assert.equal(serviceTypeIssue?.message, "请选择咨询方向");
+  }
+});
+
 test("lead validation requires an organization name", () => {
   assert.equal(parseLeadInput({...completeLead, companyName: "   "}).success, false);
   const {companyName: _companyName, ...withoutCompanyName} = completeLead;

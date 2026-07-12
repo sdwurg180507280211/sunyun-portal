@@ -48,6 +48,15 @@ test("marketing page exposes the approved Pharma Prism sections", () => {
   assert.doesNotMatch(source, /Delivery console|88\s*-|index \* 14|榫合云/);
 });
 
+test("marketing capability claims defer to project contracts and acceptance results", () => {
+  const source = read("components/marketing/marketing-page.tsx");
+
+  assert.match(source, /这些是能力表达，不是认证标志；若具体项目不包含其中某项，以实际合同与方案为准。/);
+  assert.match(source, /相关能力可按项目需求设计，具体措施以方案与验收结果为准。/);
+  assert.match(source, /实际合同与方案/);
+  assert.match(source, /验收结果/);
+});
+
 test("hero keeps each approved claim sentence on one line across target viewports", () => {
   const source = read("components/marketing/marketing-page.tsx");
   const css = read("app/globals.css");
@@ -92,4 +101,13 @@ test("marketing links constrain motion to reduced-motion-safe transforms", () =>
   assert.doesNotMatch(source, /\btransition(?!-)\b/);
   assert.doesNotMatch(source, disallowedTransition);
   assert.doesNotMatch(source, /hover:brightness-/);
+});
+
+test("layered anchor reset allows link color utilities to win", () => {
+  const css = read("app/globals.css");
+  const source = read("components/marketing/marketing-page.tsx");
+
+  assert.match(css, /@layer base\s*\{[\s\S]*?\ba\s*\{[^}]*color:\s*inherit;[^}]*text-decoration:\s*none;[^}]*\}[\s\S]*?\}/);
+  assert.doesNotMatch(css, /^a\s*\{/m);
+  assert.match(source, /const primaryLink\s*=\s*[\s\S]*?text-white/);
 });

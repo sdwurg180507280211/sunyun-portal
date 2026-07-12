@@ -63,7 +63,7 @@ export function LeadForm() {
       </TextField>
       <p className="rounded-lg border border-blue-200/25 bg-blue-400/10 p-3 text-sm leading-6 text-slate-200">请勿填写患者、受试者、病历、处方、身份证件或其他敏感个人信息。</p>
       <details className="rounded-xl border border-white/15 bg-white/5 p-4">
-        <summary className="flex min-h-11 cursor-pointer items-center font-bold">补充信息（选填）</summary>
+        <summary className="list-item min-h-11 cursor-pointer py-2.5 font-bold leading-6">补充信息（选填）</summary>
         <div className="form-grid mt-4">
           <TextField name="wechat"><Label className="text-slate-200">微信</Label><Input className="min-h-11" /></TextField>
           <TextField name="city"><Label className="text-slate-200">所在地区</Label><Input className="min-h-11" /></TextField>
