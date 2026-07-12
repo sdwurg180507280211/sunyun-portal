@@ -57,6 +57,30 @@ test("marketing capability claims defer to project contracts and acceptance resu
   assert.match(source, /验收结果/);
 });
 
+test("contact section preserves the approved gradient and glass composition", () => {
+  const source = read("components/marketing/marketing-page.tsx");
+  const css = read("app/globals.css");
+  const contact = source.match(/<section\b[^>]*id="contact"[\s\S]*?<\/section>/)?.[0] ?? "";
+
+  assert.match(contact, /contact-panel/);
+  assert.match(contact, /lg:grid-cols-\[\.78fr_1\.22fr\]/);
+  assert.match(contact, /从一个明确的[\s\S]*<br\s*\/?>[\s\S]*业务场景开始。/);
+  assert.match(contact, /contact-note[^"\n]*hidden[^"\n]*lg:block/);
+
+  assert.match(css, /\.contact-panel\s*\{[^}]*linear-gradient\(135deg,\s*#10233f,\s*#12396f\s+64%,\s*#315ea7\)/s);
+  assert.match(css, /\.contact-form-card\s*\{[^}]*background:\s*rgb\(255\s+255\s+255\s*\/\s*7%\)/s);
+  assert.match(css, /\.contact-form-card\s*\{[^}]*border:\s*1px solid rgb\(255\s+255\s+255\s*\/\s*14%\)/s);
+  assert.match(css, /\.contact-form-card\s*\{[^}]*-webkit-backdrop-filter:\s*blur\(12px\)/s);
+  assert.match(css, /\.contact-form-card\s*\{[^}]*backdrop-filter:\s*blur\(12px\)/s);
+  assert.match(css, /\.contact-submit\s*\{[^}]*width:\s*100%/s);
+  assert.match(css, /\.contact-submit\s*\{[^}]*background:\s*#dfeaff/s);
+  assert.match(css, /\.contact-submit\s*\{[^}]*color:\s*#10305b/s);
+  assert.match(css, /\.contact-control\s*\{[^}]*background:\s*rgb\(7\s+27\s+55\s*\/\s*32%\)/s);
+  assert.match(css, /\.contact-submit:focus-visible\s*\{[^}]*outline:\s*2px solid #ffffff/s);
+  assert.match(css, /\.contact-result:empty\s*\{[^}]*position:\s*absolute/s);
+  assert.doesNotMatch(css, /\.contact-result:empty\s*\{[^}]*display:\s*none/s);
+});
+
 test("hero keeps each approved claim sentence on one line across target viewports", () => {
   const source = read("components/marketing/marketing-page.tsx");
   const css = read("app/globals.css");

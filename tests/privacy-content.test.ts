@@ -83,3 +83,28 @@ test("lead form controls meet touch-target and dark-surface contrast contracts",
   }
   assert.doesNotMatch(summary, /\b(?:flex|items-center)\b/);
 });
+
+test("lead form keeps real behavior inside the approved glass visual shell", () => {
+  const source = readFileSync(resolve(root, "components/lead-form/lead-form.tsx"), "utf8");
+  const form = source.match(/<Form\b[\s\S]*?<\/Form>/)?.[0] ?? "";
+  const inputs = form.match(/<Input\b[^>]*\/>/g) ?? [];
+  const select = form.match(/<select\b[^>]*>/)?.[0] ?? "";
+  const textArea = form.match(/<TextArea\b[^>]*\/>/)?.[0] ?? "";
+  const submitButton = form.match(/<Button\b[^>]*type="submit"[^>]*>/)?.[0] ?? "";
+
+  assert.match(form, /className="[^"]*\bcontact-form-card\b[^"]*"/);
+  assert.equal(inputs.length, 8);
+  for (const input of inputs) assert.match(input, /className="[^"]*\bcontact-control\b[^"]*"/);
+  assert.match(select, /className="[^"]*\bcontact-control\b[^"]*"/);
+  assert.match(textArea, /className="[^"]*\bcontact-control\b[^"]*"/);
+  assert.match(submitButton, /className="[^"]*\bcontact-submit\b[^"]*\bw-full\b[^"]*"/);
+  assert.match(form, /补充信息（选填）/);
+  assert.match(form, /name="consent"/);
+  assert.match(form, /aria-live="polite"/);
+  assert.match(form, /contact-form-note[^"\n]*lg:hidden/);
+  assert.match(form, /contact-result/);
+  assert.match(form, /data-state=\{result\.type\}/);
+  assert.match(textArea, /rows=\{4\}/);
+  assert.match(textArea, /\bresize-y\b/);
+  assert.match(form, /提交商务咨询\s*<span aria-hidden="true">↗<\/span>/);
+});

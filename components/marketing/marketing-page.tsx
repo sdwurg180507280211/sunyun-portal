@@ -250,19 +250,25 @@ export function MarketingPage() {
           </div>
         </section>
 
-        <section className="site-shell scroll-mt-20 py-24" id="contact">
-          <div className="grid gap-12 rounded-[1.5rem] bg-[var(--foreground)] p-6 text-white sm:p-10 lg:grid-cols-[.75fr_1.25fr] lg:p-14">
-            <div>
-              <p className="section-kicker text-blue-300">Business inquiry</p>
-              <h2 className="mt-5 text-4xl font-bold tracking-[-.02em]">从一个明确的业务场景开始。</h2>
-              <p className="mt-6 leading-8 text-slate-300">
-                请简要说明当前流程与希望改善的环节，无需上传业务数据或完整需求文档。
-              </p>
-              <p className="mt-8 border-l-2 border-blue-300 pl-4 text-sm leading-6 text-slate-300">
-                请勿提交患者、受试者、病历、处方、身份证件或其他敏感个人信息。
-              </p>
+        <section className="scroll-mt-20 bg-white py-12 sm:py-16" id="contact">
+          <div className="site-shell">
+            <div className="contact-panel grid gap-10 rounded-[1.5rem] p-6 text-white sm:p-10 lg:grid-cols-[.78fr_1.22fr] lg:p-14">
+              <div className="lg:pt-2">
+                <p className="section-kicker text-blue-300">Business inquiry</p>
+                <h2 className="mt-5 text-[clamp(2.25rem,4vw,3.25rem)] font-bold leading-[1.08] tracking-[-.035em]">
+                  从一个明确的
+                  <br />
+                  业务场景开始。
+                </h2>
+                <p className="mt-6 leading-8 text-slate-300">
+                  请简要说明当前流程与希望改善的环节，无需上传业务数据或完整需求文档。
+                </p>
+                <p className="contact-note mt-8 hidden rounded-r-xl border-l-2 border-blue-300 p-3 text-sm leading-6 lg:block">
+                  请勿提交患者、受试者、病历、处方、身份证件或其他敏感个人信息。
+                </p>
+              </div>
+              <LeadForm />
             </div>
-            <LeadForm />
           </div>
         </section>
       </main>
