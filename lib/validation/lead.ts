@@ -1,10 +1,15 @@
 import {z} from "zod";
 
 const text = (max: number) => z.string().trim().max(max).default("");
+const requiredText = (max: number, message: string) =>
+  z.preprocess(
+    (value) => value ?? "",
+    z.string().trim().min(1, message).max(max),
+  );
 
 export const leadSchema = z.object({
   serviceType: z.string().trim().min(1, "请选择项目类型").max(60),
-  companyName: text(80),
+  companyName: requiredText(80, "请填写单位名称"),
   contactName: z.string().trim().min(1, "请填写联系人").max(40),
   phone: z
     .string()

@@ -5,6 +5,7 @@ import {consumeRateLimit} from "@/lib/security/rate-limit";
 import {getClientIp} from "@/lib/security/request";
 import {SESSION_COOKIE, verifySessionToken} from "@/lib/auth/session";
 import {requireAuthConfig} from "@/lib/config/env";
+import {leadCopy} from "@/lib/brand";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -63,8 +64,8 @@ export async function POST(request: NextRequest) {
       {
         ok: true,
         id: lead.id,
-        message: "需求已进入榫合云项目池",
-        nextStep: "1 个工作日内完成需求澄清并给出执行建议",
+        message: leadCopy.accepted,
+        nextStep: leadCopy.nextStep,
       },
       {status: 201},
     );
