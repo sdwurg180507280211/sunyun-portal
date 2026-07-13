@@ -6,16 +6,15 @@ on:
     types: [completed]
   workflow_dispatch:
 
-concurrency:
-  group: sunyun-production
-  cancel-in-progress: false
-
 jobs:
   deploy:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: self-hosted
+    concurrency:
+      group: sunyun-production
+      cancel-in-progress: false
     steps:
       - name: Preserve production data before checkout cleanup
         shell: bash
@@ -136,6 +135,99 @@ jobs:
 
           if [ "$healthy" -ne 1 ]; then
             "${compose[@]}" logs --tail=200 sunyun-portal || true
+            restore_previous || true
+            exit 1
+          fi
+
+          docker image prune -f
+
+  deploy-test:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'develop')
+    runs-on: self-hosted
+    concurrency:
+      group: sunyun-test
+      cancel-in-progress: false
+    steps:
+      - name: Prepare test directories
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /opt/sunyun-portal-test/data /opt/sunyun-portal-test/backups
+          test -w /opt/sunyun-portal-test/data
+          test -w /opt/sunyun-portal-test/backups
+
+      - name: Checkout verified revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+
+      - name: Verify test deployment configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file=/opt/sunyun-portal-test/.env
+          test -f "$env_file"
+          grep -Eq '^ADMIN_USERNAME=.+$' "$env_file"
+          grep -Eq '^ADMIN_PASSWORD_HASH=scrypt:.+:.+$' "$env_file"
+          grep -Eq '^SESSION_SECRET=.{32,}$' "$env_file"
+          export SUNYUN_RUN_UID="$(id -u)"
+          export SUNYUN_RUN_GID="$(id -g)"
+          docker compose -f docker-compose.test.yml --env-file "$env_file" config --quiet
+
+      - name: Build, deploy test, verify, and roll back on failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file=/opt/sunyun-portal-test/.env
+          export SUNYUN_RUN_UID="$(id -u)"
+          export SUNYUN_RUN_GID="$(id -g)"
+          compose=(docker compose -f docker-compose.test.yml --env-file "$env_file")
+          had_previous=0
+
+          restore_previous() {
+            if [ "$had_previous" -ne 1 ]; then
+              echo "No previous test image is available for rollback."
+              return 1
+            fi
+            echo "Restoring the previous test image."
+            docker tag sunyun-portal-test:rollback sunyun-portal-test:latest
+            "${compose[@]}" up -d --force-recreate --no-build sunyun-portal-test
+            for attempt in $(seq 1 20); do
+              if curl -fsS http://127.0.0.1:8081/api/health; then
+                echo "Previous test image restored successfully."
+                return 0
+              fi
+              sleep 3
+            done
+            echo "Previous test image could not be verified after rollback."
+            return 1
+          }
+
+          if docker image inspect sunyun-portal-test:latest >/dev/null 2>&1; then
+            docker tag sunyun-portal-test:latest sunyun-portal-test:rollback
+            had_previous=1
+          fi
+
+          "${compose[@]}" build
+          if ! "${compose[@]}" up -d --remove-orphans; then
+            "${compose[@]}" logs --tail=200 sunyun-portal-test || true
+            restore_previous || true
+            exit 1
+          fi
+
+          healthy=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8081/api/health; then
+              healthy=1
+              break
+            fi
+            sleep 3
+          done
+
+          if [ "$healthy" -ne 1 ]; then
+            "${compose[@]}" logs --tail=200 sunyun-portal-test || true
             restore_previous || true
             exit 1
           fi
