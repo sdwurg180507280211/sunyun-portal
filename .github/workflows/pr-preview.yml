@@ -22,7 +22,6 @@ jobs:
     env:
       PR_NUMBER: ${{ github.event.pull_request.number }}
       PREVIEW_ROOT: /opt/sunyun-portal/previews/pr-${{ github.event.pull_request.number }}
-      PREVIEW_PORT: ${{ 18000 + github.event.pull_request.number }}
       PREVIEW_CONTAINER: sunyun-preview-pr-${{ github.event.pull_request.number }}
       PREVIEW_IMAGE: sunyun-portal:preview-pr-${{ github.event.pull_request.number }}
     steps:
@@ -71,6 +70,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          PREVIEW_PORT=$((18000 + PR_NUMBER))
+          export PREVIEW_PORT
+          echo "PREVIEW_PORT=$PREVIEW_PORT" >> "$GITHUB_ENV"
+
           mkdir -p "$PREVIEW_ROOT/data"
           chmod 700 "$PREVIEW_ROOT"
           chmod 755 "$PREVIEW_ROOT/data"
