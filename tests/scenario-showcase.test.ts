@@ -51,7 +51,9 @@ test("marketing page delegates the complete scenario section to ScenarioShowcase
 });
 
 test("scenario styles include desktop composition, mobile simplification, and reduced motion", () => {
-  const css = read("app/globals.css");
+  const layout = read("app/layout.tsx");
+  const css = read("app/scenario-showcase.css");
+  assert.match(layout, /scenario-showcase\.css/);
   assert.match(css, /\.scenario-showcase-grid/);
   assert.match(css, /grid-template-columns:\s*1\.25fr\s+0\.75fr/);
   assert.match(css, /@media \(max-width: 1023px\)/);
