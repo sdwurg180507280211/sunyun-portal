@@ -137,7 +137,11 @@ async function waitForScenarioReveal() {
     const {result} = await send("Runtime.evaluate", {
       expression: `(() => {
         const elements = Array.from(document.querySelectorAll("#scenarios .reveal"));
-        return elements.length > 0 && elements.every((element) => element.dataset.state === "visible");
+        const viewportElements = elements.filter((element) => {
+          const rectangle = element.getBoundingClientRect();
+          return rectangle.top < window.innerHeight && rectangle.bottom > 0;
+        });
+        return viewportElements.length > 0 && viewportElements.every((element) => element.dataset.state === "visible");
       })()`,
       returnByValue: true,
     });
@@ -157,14 +161,18 @@ async function waitForScenarioReveal() {
 
   const {result} = await send("Runtime.evaluate", {
     expression: `JSON.stringify(
-      Array.from(document.querySelectorAll("#scenarios .reveal")).map((element) => ({
-        state: element.dataset.state,
-        opacity: getComputedStyle(element).opacity,
-      })),
+      Array.from(document.querySelectorAll("#scenarios .reveal")).map((element) => {
+        const rectangle = element.getBoundingClientRect();
+        return {
+          state: element.dataset.state,
+          opacity: getComputedStyle(element).opacity,
+          inViewport: rectangle.top < window.innerHeight && rectangle.bottom > 0,
+        };
+      }),
     )`,
     returnByValue: true,
   });
-  throw new Error(`Scenario Reveal elements did not become visible: ${result.value}`);
+  throw new Error(`Viewport Reveal elements did not become visible: ${result.value}`);
 }
 
 async function stopChrome(signal) {
