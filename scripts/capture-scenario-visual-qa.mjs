@@ -1,12 +1,11 @@
 import {spawn} from "node:child_process";
-import {mkdtemp, mkdir, rm, writeFile} from "node:fs/promises";
+import {mkdtemp, mkdir, readFile, rm, writeFile} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 
 const baseUrl = process.argv[2] || "http://127.0.0.1:8081";
 const outputDir = process.argv[3] || "visual-qa";
 const chromeBinary = process.env.CHROME_BIN || "google-chrome";
-const debugPort = 9222;
 const captures = [
   {name: "1440x1000", width: 1440, height: 1000, reducedMotion: false},
   {name: "1280x800", width: 1280, height: 800, reducedMotion: false},
@@ -19,6 +18,7 @@ const captures = [
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const userDataDir = await mkdtemp(join(tmpdir(), "yunyihui-chrome-"));
+const devToolsPortFile = join(userDataDir, "DevToolsActivePort");
 await mkdir(outputDir, {recursive: true});
 
 const chrome = spawn(
@@ -28,7 +28,7 @@ const chrome = spawn(
     "--no-sandbox",
     "--disable-gpu",
     "--hide-scrollbars",
-    `--remote-debugging-port=${debugPort}`,
+    "--remote-debugging-port=0",
     `--user-data-dir=${userDataDir}`,
     "about:blank",
   ],
@@ -36,20 +36,52 @@ const chrome = spawn(
 );
 
 let chromeError = "";
+let chromeSpawnError;
 chrome.stderr.setEncoding("utf8");
 chrome.stderr.on("data", (chunk) => {
   chromeError += chunk;
 });
+chrome.on("error", (error) => {
+  chromeSpawnError = error;
+});
+
+async function waitForDebugPort() {
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    if (chromeSpawnError) {
+      throw new Error(`Chrome could not start: ${chromeSpawnError.message}`);
+    }
+    if (chrome.exitCode !== null) {
+      throw new Error(`Chrome exited before DevTools became ready (code ${chrome.exitCode}).\n${chromeError}`);
+    }
+    try {
+      const [portLine] = (await readFile(devToolsPortFile, "utf8")).trim().split(/\r?\n/);
+      const port = Number(portLine);
+      if (Number.isInteger(port) && port > 0) return port;
+    } catch {
+      // Chrome has not written its assigned DevTools port yet.
+    }
+    await sleep(100);
+  }
+  throw new Error(`Chrome did not publish DevToolsActivePort.\n${chromeError}`);
+}
+
+const debugPort = await waitForDebugPort();
 
 async function waitForTarget() {
-  for (let attempt = 0; attempt < 50; attempt += 1) {
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    if (chromeSpawnError) {
+      throw new Error(`Chrome could not start: ${chromeSpawnError.message}`);
+    }
+    if (chrome.exitCode !== null) {
+      throw new Error(`Chrome exited before a page target became ready (code ${chrome.exitCode}).\n${chromeError}`);
+    }
     try {
       const response = await fetch(`http://127.0.0.1:${debugPort}/json/list`);
       const targets = await response.json();
       const page = targets.find((target) => target.type === "page");
       if (page?.webSocketDebuggerUrl) return page.webSocketDebuggerUrl;
     } catch {
-      // Chrome is still starting.
+      // Chrome DevTools is still starting.
     }
     await sleep(100);
   }
@@ -84,7 +116,7 @@ function send(method, params = {}) {
 }
 
 async function waitForDocument() {
-  for (let attempt = 0; attempt < 50; attempt += 1) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
     const {result} = await send("Runtime.evaluate", {
       expression: "document.readyState === 'complete' && Boolean(document.getElementById('scenarios'))",
       returnByValue: true,
