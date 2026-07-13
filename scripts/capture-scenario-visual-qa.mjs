@@ -137,11 +137,11 @@ async function waitForScenarioReveal() {
     const {result} = await send("Runtime.evaluate", {
       expression: `(() => {
         const elements = Array.from(document.querySelectorAll("#scenarios .reveal"));
-        const viewportElements = elements.filter((element) => {
+        const activationElements = elements.filter((element) => {
           const rectangle = element.getBoundingClientRect();
-          return rectangle.top < window.innerHeight && rectangle.bottom > 0;
+          return rectangle.top <= window.innerHeight * 0.92 && rectangle.bottom > 0;
         });
-        return viewportElements.length > 0 && viewportElements.every((element) => element.dataset.state === "visible");
+        return activationElements.length > 0 && activationElements.every((element) => element.dataset.state === "visible");
       })()`,
       returnByValue: true,
     });
@@ -166,13 +166,13 @@ async function waitForScenarioReveal() {
         return {
           state: element.dataset.state,
           opacity: getComputedStyle(element).opacity,
-          inViewport: rectangle.top < window.innerHeight && rectangle.bottom > 0,
+          inActivationZone: rectangle.top <= window.innerHeight * 0.92 && rectangle.bottom > 0,
         };
       }),
     )`,
     returnByValue: true,
   });
-  throw new Error(`Viewport Reveal elements did not become visible: ${result.value}`);
+  throw new Error(`Activation-zone Reveal elements did not become visible: ${result.value}`);
 }
 
 async function stopChrome(signal) {
