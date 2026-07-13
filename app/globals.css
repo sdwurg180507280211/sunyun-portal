@@ -19,6 +19,11 @@
   --radius-sm: 0.5rem;
   --radius-md: 0.875rem;
   --radius-lg: 1.375rem;
+  --shell-gutter-total: clamp(2rem, 6.4vw, 7rem);
+  --shell-standard: 80rem;
+  --shell-wide: 90rem;
+  --title-measure: 52.5rem;
+  --copy-measure: 45rem;
 }
 
 * {
@@ -50,9 +55,17 @@ body {
   background: var(--brand);
 }
 
-.site-shell {
-  width: min(1200px, calc(100% - 2rem));
+.site-shell,
+.site-shell-wide {
   margin-inline: auto;
+}
+
+.site-shell {
+  width: min(var(--shell-standard), calc(100% - var(--shell-gutter-total)));
+}
+
+.site-shell-wide {
+  width: min(var(--shell-wide), calc(100% - var(--shell-gutter-total)));
 }
 
 .section-kicker {
@@ -65,7 +78,7 @@ body {
 
 .section-title {
   margin-top: 0.75rem;
-  max-width: 800px;
+  max-width: var(--title-measure);
   font-size: clamp(2rem, 4vw, 3.5rem);
   font-weight: 740;
   line-height: 1.08;
@@ -73,7 +86,7 @@ body {
 }
 
 .section-copy {
-  max-width: 720px;
+  max-width: var(--copy-measure);
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.85;

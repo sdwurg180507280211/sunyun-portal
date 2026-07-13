@@ -22,6 +22,26 @@ test("motion and color tokens honor accessibility constraints", () => {
   assert.doesNotMatch(css, /animation:\s*[^;]*infinite/i);
 });
 
+test("marketing layout defines layered containers and reading measures", () => {
+  const css = read("app/globals.css");
+
+  assert.match(css, /--shell-gutter-total:\s*clamp\(2rem,\s*6\.4vw,\s*7rem\)/);
+  assert.match(css, /--shell-standard:\s*80rem/);
+  assert.match(css, /--shell-wide:\s*90rem/);
+  assert.match(css, /--title-measure:\s*52\.5rem/);
+  assert.match(css, /--copy-measure:\s*45rem/);
+  assert.match(
+    css,
+    /\.site-shell\s*\{[^}]*width:\s*min\(var\(--shell-standard\),\s*calc\(100% - var\(--shell-gutter-total\)\)\)/s,
+  );
+  assert.match(
+    css,
+    /\.site-shell-wide\s*\{[^}]*width:\s*min\(var\(--shell-wide\),\s*calc\(100% - var\(--shell-gutter-total\)\)\)/s,
+  );
+  assert.match(css, /\.section-title\s*\{[^}]*max-width:\s*var\(--title-measure\)/s);
+  assert.match(css, /\.section-copy\s*\{[^}]*max-width:\s*var\(--copy-measure\)/s);
+});
+
 test("marketing page exposes the approved Pharma Prism sections", () => {
   const source = read("components/marketing/marketing-page.tsx");
   const heroClaim = /让医药数字化，[\s\S]*落到真实业务里。/;
