@@ -92,7 +92,19 @@ async function waitForDocument() {
     if (result.value === true) return;
     await sleep(100);
   }
-  throw new Error("Scenario section did not become ready");
+  const {result} = await send("Runtime.evaluate", {
+    expression:
+      "JSON.stringify({href: location.href, readyState: document.readyState, body: document.body?.innerText?.slice(0, 160)})",
+    returnByValue: true,
+  });
+  throw new Error(`Scenario section did not become ready: ${result.value}`);
+}
+
+async function stopChrome(signal) {
+  if (chrome.exitCode !== null) return;
+  const exited = new Promise((resolve) => chrome.once("exit", resolve));
+  chrome.kill(signal);
+  await Promise.race([exited, sleep(2_000)]);
 }
 
 try {
@@ -115,7 +127,10 @@ try {
         },
       ],
     });
-    await send("Page.navigate", {url: `${baseUrl}/#scenarios`});
+    const navigation = await send("Page.navigate", {url: `${baseUrl}/#scenarios`});
+    if (navigation.errorText) {
+      throw new Error(`${capture.name}: navigation failed: ${navigation.errorText}`);
+    }
     await waitForDocument();
     await send("Runtime.evaluate", {
       expression: "document.fonts?.ready ?? Promise.resolve()",
@@ -169,6 +184,7 @@ try {
   }
 } finally {
   socket.close();
-  chrome.kill("SIGTERM");
-  await rm(userDataDir, {recursive: true, force: true});
+  await stopChrome("SIGTERM");
+  if (chrome.exitCode === null) await stopChrome("SIGKILL");
+  await rm(userDataDir, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
 }
