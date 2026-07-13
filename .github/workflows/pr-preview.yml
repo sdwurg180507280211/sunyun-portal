@@ -23,6 +23,7 @@ jobs:
       PR_NUMBER: ${{ github.event.pull_request.number }}
       PREVIEW_ROOT: /opt/sunyun-portal/previews/pr-${{ github.event.pull_request.number }}
       PREVIEW_CONTAINER: sunyun-preview-pr-${{ github.event.pull_request.number }}
+      PREVIEW_TUNNEL_CONTAINER: sunyun-preview-tunnel-pr-${{ github.event.pull_request.number }}
       PREVIEW_IMAGE: sunyun-portal:preview-pr-${{ github.event.pull_request.number }}
     steps:
       - name: Clean up closed preview
@@ -30,11 +31,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          docker rm -f "$PREVIEW_CONTAINER" 2>/dev/null || true
+          docker rm -f "$PREVIEW_CONTAINER" "$PREVIEW_TUNNEL_CONTAINER" 2>/dev/null || true
           docker image rm "$PREVIEW_IMAGE" 2>/dev/null || true
-          if [ -f "$PREVIEW_ROOT/cloudflared.pid" ]; then
-            kill "$(cat "$PREVIEW_ROOT/cloudflared.pid")" 2>/dev/null || true
-          fi
           rm -rf "$PREVIEW_ROOT"
 
       - name: Update closed-preview comment
@@ -78,36 +76,18 @@ jobs:
           chmod 700 "$PREVIEW_ROOT"
           chmod 755 "$PREVIEW_ROOT/data"
 
-          docker rm -f "$PREVIEW_CONTAINER" 2>/dev/null || true
-          if [ -f "$PREVIEW_ROOT/cloudflared.pid" ]; then
-            kill "$(cat "$PREVIEW_ROOT/cloudflared.pid")" 2>/dev/null || true
-          fi
-
-          case "$(uname -m)" in
-            x86_64) cloudflared_arch=amd64 ;;
-            aarch64|arm64) cloudflared_arch=arm64 ;;
-            *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
-          esac
-
-          cloudflared="$PREVIEW_ROOT/cloudflared"
-          if [ ! -x "$cloudflared" ]; then
-            curl -fL --retry 3 \
-              "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${cloudflared_arch}" \
-              -o "$cloudflared"
-            chmod 700 "$cloudflared"
-          fi
-
-          : > "$PREVIEW_ROOT/cloudflared.log"
-          (
-            unset RUNNER_TRACKING_ID
-            nohup "$cloudflared" tunnel --no-autoupdate --url "http://127.0.0.1:$PREVIEW_PORT" \
-              > "$PREVIEW_ROOT/cloudflared.log" 2>&1 < /dev/null &
-            echo $! > "$PREVIEW_ROOT/cloudflared.pid"
-          )
+          docker rm -f "$PREVIEW_CONTAINER" "$PREVIEW_TUNNEL_CONTAINER" 2>/dev/null || true
+          docker pull cloudflare/cloudflared:latest
+          docker run -d \
+            --name "$PREVIEW_TUNNEL_CONTAINER" \
+            --restart unless-stopped \
+            --network host \
+            cloudflare/cloudflared:latest \
+            tunnel --no-autoupdate --url "http://127.0.0.1:$PREVIEW_PORT"
 
           preview_url=""
           for attempt in $(seq 1 40); do
-            preview_url="$(grep -oE 'https://[-a-z0-9]+\.trycloudflare\.com' "$PREVIEW_ROOT/cloudflared.log" | head -n 1 || true)"
+            preview_url="$(docker logs "$PREVIEW_TUNNEL_CONTAINER" 2>&1 | grep -oE 'https://[-a-z0-9]+\.trycloudflare\.com' | head -n 1 || true)"
             if [ -n "$preview_url" ]; then
               break
             fi
@@ -115,7 +95,7 @@ jobs:
           done
 
           if [ -z "$preview_url" ]; then
-            cat "$PREVIEW_ROOT/cloudflared.log"
+            docker logs "$PREVIEW_TUNNEL_CONTAINER" || true
             exit 1
           fi
 
@@ -180,7 +160,7 @@ jobs:
             sleep 2
           done
           if [ "$public_ready" -ne 1 ]; then
-            cat "$PREVIEW_ROOT/cloudflared.log"
+            docker logs "$PREVIEW_TUNNEL_CONTAINER" || true
             exit 1
           fi
 
