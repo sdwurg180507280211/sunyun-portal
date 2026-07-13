@@ -5,12 +5,20 @@ on:
     workflows: [CI]
     types: [completed]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment to deploy (manual runs only)"
+        type: choice
+        options:
+          - test
+          - production
+        required: true
 
 jobs:
   deploy:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
     runs-on: self-hosted
     concurrency:
       group: sunyun-production
@@ -68,7 +76,7 @@ jobs:
       - name: Checkout verified revision
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.head_sha) || (github.event_name == 'workflow_dispatch' && inputs.environment == 'test' && 'develop') || 'main' }}
 
       - name: Verify deployment configuration
         shell: bash
@@ -143,8 +151,8 @@ jobs:
 
   deploy-test:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'develop')
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'develop') ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'test')
     runs-on: self-hosted
     concurrency:
       group: sunyun-test
@@ -161,7 +169,7 @@ jobs:
       - name: Checkout verified revision
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+          ref: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.head_sha) || (github.event_name == 'workflow_dispatch' && inputs.environment == 'test' && 'develop') || 'main' }}
 
       - name: Verify test deployment configuration
         shell: bash
