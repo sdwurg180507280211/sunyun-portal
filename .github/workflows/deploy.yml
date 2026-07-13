@@ -174,7 +174,7 @@ jobs:
           grep -Eq '^SESSION_SECRET=.{32,}$' "$env_file"
           export SUNYUN_RUN_UID="$(id -u)"
           export SUNYUN_RUN_GID="$(id -g)"
-          docker compose -f docker-compose.test.yml --env-file "$env_file" config --quiet
+          docker compose -p sunyun-test -f docker-compose.test.yml --env-file "$env_file" config --quiet
 
       - name: Build, deploy test, verify, and roll back on failure
         shell: bash
@@ -183,7 +183,7 @@ jobs:
           env_file=/opt/sunyun-portal-test/.env
           export SUNYUN_RUN_UID="$(id -u)"
           export SUNYUN_RUN_GID="$(id -g)"
-          compose=(docker compose -f docker-compose.test.yml --env-file "$env_file")
+          compose=(docker compose -p sunyun-test -f docker-compose.test.yml --env-file "$env_file")
           had_previous=0
 
           restore_previous() {
