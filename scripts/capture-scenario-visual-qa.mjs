@@ -132,6 +132,41 @@ async function waitForDocument() {
   throw new Error(`Scenario section did not become ready: ${result.value}`);
 }
 
+async function waitForScenarioReveal() {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const {result} = await send("Runtime.evaluate", {
+      expression: `(() => {
+        const elements = Array.from(document.querySelectorAll("#scenarios .reveal"));
+        return elements.length > 0 && elements.every((element) => element.dataset.state === "visible");
+      })()`,
+      returnByValue: true,
+    });
+    if (result.value === true) {
+      await send("Runtime.evaluate", {
+        expression: `Promise.all(
+          Array.from(document.getElementById("scenarios").getAnimations({subtree: true})).map((animation) =>
+            animation.finished.catch(() => undefined),
+          ),
+        )`,
+        awaitPromise: true,
+      });
+      return;
+    }
+    await sleep(100);
+  }
+
+  const {result} = await send("Runtime.evaluate", {
+    expression: `JSON.stringify(
+      Array.from(document.querySelectorAll("#scenarios .reveal")).map((element) => ({
+        state: element.dataset.state,
+        opacity: getComputedStyle(element).opacity,
+      })),
+    )`,
+    returnByValue: true,
+  });
+  throw new Error(`Scenario Reveal elements did not become visible: ${result.value}`);
+}
+
 async function stopChrome(signal) {
   if (chrome.exitCode !== null) return;
   const exited = new Promise((resolve) => chrome.once("exit", resolve));
@@ -180,6 +215,7 @@ try {
       expression: "new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))",
       awaitPromise: true,
     });
+    await waitForScenarioReveal();
 
     const {result: metricsResult} = await send("Runtime.evaluate", {
       expression: `JSON.stringify({
