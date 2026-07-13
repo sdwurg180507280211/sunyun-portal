@@ -75,8 +75,24 @@ jobs:
             cat "$RUNNER_TEMP/sunyun-visual.log"
             exit 1
           fi
-          node scripts/capture-scenario-visual-qa.mjs http://127.0.0.1:8081 visual-qa
+          set +e
+          node scripts/capture-scenario-visual-qa.mjs http://127.0.0.1:8081 visual-qa 2>&1 | tee visual-qa-capture.log
+          capture_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$capture_status" -ne 0 ]; then
+            exit "$capture_status"
+          fi
           test "$(find visual-qa -name '*.png' | wc -l)" -eq 7
+      - name: Upload scenario visual QA diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yunyihui-scenario-visual-qa-debug
+          path: |
+            visual-qa-capture.log
+            ${{ runner.temp }}/sunyun-visual.log
+          if-no-files-found: ignore
+          retention-days: 3
       - name: Upload scenario visual QA
         uses: actions/upload-artifact@v4
         with:
