@@ -127,7 +127,7 @@ try {
         },
       ],
     });
-    const navigation = await send("Page.navigate", {url: `${baseUrl}/#scenarios`});
+    const navigation = await send("Page.navigate", {url: `${baseUrl}/`});
     if (navigation.errorText) {
       throw new Error(`${capture.name}: navigation failed: ${navigation.errorText}`);
     }
@@ -140,8 +140,8 @@ try {
       expression: `(() => {
         document.documentElement.style.scrollBehavior = "auto";
         const target = document.getElementById("scenarios");
-        target.scrollIntoView({block: "start"});
-        window.scrollBy(0, -80);
+        const top = window.scrollY + target.getBoundingClientRect().top - 80;
+        window.scrollTo({top, left: 0, behavior: "auto"});
       })()`,
     });
     await send("Runtime.evaluate", {
