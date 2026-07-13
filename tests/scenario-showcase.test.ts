@@ -25,3 +25,14 @@ test("main dashboard exposes readable statuses and anonymous project names", () 
   assert.match(source, /aria-label="药企业务协同平台模拟工作台"/);
   assert.doesNotMatch(source, /use client|useState|useEffect/);
 });
+
+test("supporting scenario panels keep meaningful text and decorative charts separate", () => {
+  const ledger = read("components/marketing/scenario-ledger.tsx");
+  const analysis = read("components/marketing/scenario-analysis.tsx");
+  assert.match(ledger, /operationsLedger/);
+  assert.match(ledger, /aria-label="医疗机构运营台账模拟界面"/);
+  assert.match(analysis, /commerceAnalysis/);
+  assert.match(analysis, /aria-hidden="true"/);
+  assert.match(analysis, /医药商业经营分析模拟界面/);
+  assert.doesNotMatch(`${ledger}\n${analysis}`, /use client|canvas|setInterval|requestAnimationFrame/);
+});
