@@ -63,31 +63,19 @@ jobs:
           node .next/standalone/server.js > "$RUNNER_TEMP/sunyun-visual.log" 2>&1 &
           visual_pid=$!
           trap 'kill "$visual_pid" 2>/dev/null || true' EXIT
+          server_ready=0
           for attempt in $(seq 1 20); do
             if curl -fsS http://127.0.0.1:8081/api/health; then
+              server_ready=1
               break
             fi
             sleep 1
           done
-          capture() {
-            local name="$1"
-            local size="$2"
-            google-chrome --headless --no-sandbox --disable-gpu --hide-scrollbars \
-              --window-size="$size" \
-              --screenshot="visual-qa/$name.png" \
-              http://127.0.0.1:8081/#scenarios
-          }
-          capture 1440x1000 1440,1000
-          capture 1280x800 1280,800
-          capture 1024x768 1024,768
-          capture 768x1024 768,1024
-          capture 390x844 390,844
-          capture 375x667 375,667
-          google-chrome --headless --no-sandbox --disable-gpu --hide-scrollbars \
-            --force-prefers-reduced-motion \
-            --window-size=1440,1000 \
-            --screenshot=visual-qa/1440x1000-reduced-motion.png \
-            http://127.0.0.1:8081/#scenarios
+          if [ "$server_ready" -ne 1 ]; then
+            cat "$RUNNER_TEMP/sunyun-visual.log"
+            exit 1
+          fi
+          node scripts/capture-scenario-visual-qa.mjs http://127.0.0.1:8081 visual-qa
           test "$(find visual-qa -name '*.png' | wc -l)" -eq 7
       - name: Upload scenario visual QA
         uses: actions/upload-artifact@v4
