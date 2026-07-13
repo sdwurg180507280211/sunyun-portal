@@ -70,3 +70,10 @@ test("visual QA isolates Chrome debugging and waits for the assigned port", () =
   assert.ok(script.includes("DevToolsActivePort"));
   assert.equal(script.includes("const debugPort = 9222"), false);
 });
+
+test("visual QA waits for Reveal state and transitions before capture", () => {
+  const script = read("scripts/capture-scenario-visual-qa.mjs");
+  assert.ok(script.includes('querySelectorAll("#scenarios .reveal")'));
+  assert.ok(script.includes('dataset.state === "visible"'));
+  assert.ok(script.includes("getAnimations({subtree: true})"));
+});
