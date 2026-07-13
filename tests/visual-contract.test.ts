@@ -101,14 +101,50 @@ test("contact section preserves the approved gradient and glass composition", ()
   assert.doesNotMatch(css, /\.contact-result:empty\s*\{[^}]*display:\s*none/s);
 });
 
+test("marketing page applies wide shells with compact responsive rhythm", () => {
+  const source = read("components/marketing/marketing-page.tsx");
+  const section = (id: string) =>
+    source.match(new RegExp(`<section\\b[^>]*id=["']${id}["'][\\s\\S]*?<\\/section>`))?.[0] ?? "";
+  const hero = source.match(/<section\b[^>]*prism-grid-bg[\s\S]*?<\/section>/)?.[0] ?? "";
+  const header = source.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
+  const footer = source.match(/<footer\b[\s\S]*?<\/footer>/)?.[0] ?? "";
+
+  assert.match(header, /site-shell-wide/);
+  assert.match(hero, /site-shell-wide grid min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/);
+  assert.doesNotMatch(hero, /min-h-\[700px\]/);
+
+  for (const id of ["audiences", "solutions", "delivery", "scenarios"]) {
+    assert.match(section(id), /site-shell-wide/);
+    assert.match(section(id), /py-16[^"\n]*lg:py-20/);
+  }
+  assert.match(section("audiences"), /bg-white/);
+  assert.match(section("about"), /site-shell(?:\s|["'])/);
+  assert.doesNotMatch(section("about"), /site-shell-wide/);
+  assert.match(section("about"), /py-16[^"\n]*lg:py-20/);
+  assert.match(section("contact"), /site-shell-wide/);
+  assert.match(footer, /site-shell-wide/);
+
+  assert.match(section("audiences"), /lg:min-h-56/);
+  assert.doesNotMatch(section("audiences"), /\bmin-h-64\b/);
+  assert.match(section("solutions"), /lg:min-h-52/);
+  assert.doesNotMatch(section("solutions"), /\bmin-h-60\b/);
+  assert.match(section("scenarios"), /lg:min-h-72/);
+  assert.doesNotMatch(section("scenarios"), /\bmin-h-(?:80|40)\b/);
+  assert.match(section("about"), /lg:min-h-44/);
+  assert.match(section("contact"), /lg:grid-cols-\[\.78fr_1\.22fr\]/);
+});
+
 test("hero keeps each approved claim sentence on one line across target viewports", () => {
   const source = read("components/marketing/marketing-page.tsx");
   const css = read("app/globals.css");
 
-  assert.match(source, /lg:grid-cols-\[7fr_5fr\]/);
+  assert.match(
+    source,
+    /site-shell-wide grid min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/,
+  );
+  assert.doesNotMatch(source, /min-h-\[700px\]/);
   assert.doesNotMatch(source, /lg:grid-cols-\[1\.05fr_\.95fr\]/);
-  assert.match(source, /px-4[^"\n]*sm:px-8[^"\n]*xl:px-\[max\(8vw,2rem\)\]/);
-  assert.doesNotMatch(source, /lg:px-\[max\(8vw,2rem\)\]/);
+  assert.doesNotMatch(source, /xl:px-\[max\(8vw,2rem\)\]/);
   assert.match(source, /text-\[clamp\(2\.5rem,5vw,4\.75rem\)\]/);
   assert.match(source, /lg:text-\[clamp\(4rem,5vw,4\.75rem\)\]/);
 

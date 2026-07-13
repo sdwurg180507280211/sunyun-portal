@@ -23,7 +23,7 @@ export function MarketingPage() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-white/90 backdrop-blur-xl">
-        <div className="site-shell flex min-h-17 items-center justify-between gap-5">
+        <div className="site-shell-wide flex min-h-17 items-center justify-between gap-5">
           <a
             aria-label={`${brand.shortName}首页`}
             className="flex rounded-lg items-center gap-3 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-600/20"
@@ -53,35 +53,37 @@ export function MarketingPage() {
       </header>
 
       <main className="overflow-hidden" id="top">
-        <section className="prism-grid-bg relative grid min-h-[700px] lg:grid-cols-[7fr_5fr]">
-          <div className="relative z-10 flex items-center px-4 py-20 sm:px-8 xl:px-[max(8vw,2rem)]">
-            <div className="max-w-3xl">
-              <p className="section-kicker">面向机构客户 · 医药产业数字化技术服务</p>
-              <h1 className="mt-7 text-[clamp(2.5rem,5vw,4.75rem)] font-[750] leading-[1.03] tracking-[-.025em] lg:text-[clamp(4rem,5vw,4.75rem)]">
-                <span className="block whitespace-nowrap">让医药数字化，</span>
-                <span className="block whitespace-nowrap text-[var(--brand)]">落到真实业务里。</span>
-              </h1>
-              <p className="mt-7 max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
-                {brand.description}从场景梳理、系统建设与数据连接，到上线支持与持续迭代。
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a className={primaryLink} href="#contact">
-                  预约方案沟通 ↗
-                </a>
-                <a className={secondaryLink} href="#solutions">
-                  查看解决方案
-                </a>
+        <section className="prism-grid-bg relative">
+          <div className="site-shell-wide grid min-h-[660px] lg:grid-cols-[7fr_5fr]">
+            <div className="relative z-10 flex items-center py-16 sm:pr-8 lg:py-20 lg:pr-10">
+              <div className="max-w-3xl">
+                <p className="section-kicker">面向机构客户 · 医药产业数字化技术服务</p>
+                <h1 className="mt-7 text-[clamp(2.5rem,5vw,4.75rem)] font-[750] leading-[1.03] tracking-[-.025em] lg:text-[clamp(4rem,5vw,4.75rem)]">
+                  <span className="block whitespace-nowrap">让医药数字化，</span>
+                  <span className="block whitespace-nowrap text-[var(--brand)]">落到真实业务里。</span>
+                </h1>
+                <p className="mt-7 max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
+                  {brand.description}从场景梳理、系统建设与数据连接，到上线支持与持续迭代。
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <a className={primaryLink} href="#contact">
+                    预约方案沟通 ↗
+                  </a>
+                  <a className={secondaryLink} href="#solutions">
+                    查看解决方案
+                  </a>
+                </div>
+                <p className="mt-7 text-sm text-[var(--muted)]">{brand.disclaimer}</p>
               </div>
-              <p className="mt-7 text-sm text-[var(--muted)]">{brand.disclaimer}</p>
             </div>
-          </div>
-          <div className="flex min-h-[440px] items-center justify-center px-4 pb-16 lg:min-h-0 lg:pb-0">
-            <PrismGraphic />
+            <div className="flex min-h-[400px] items-center justify-center pb-12 lg:min-h-0 lg:pb-0">
+              <PrismGraphic />
+            </div>
           </div>
         </section>
 
         <section aria-label="项目交付物" className="border-y border-[var(--border)] bg-white">
-          <div className="site-shell grid grid-cols-2 md:grid-cols-6">
+          <div className="site-shell-wide grid grid-cols-2 md:grid-cols-6">
             <p className="col-span-2 border-b border-[var(--border)] py-5 text-xs font-bold tracking-[.12em] text-[var(--muted)] md:col-span-1 md:border-b-0">
               DELIVERABLES
             </p>
@@ -91,39 +93,41 @@ export function MarketingPage() {
               </p>
             ))}
           </div>
-          <p className="site-shell border-t border-[var(--border)] py-3 text-xs leading-6 text-[var(--muted)]">
+          <p className="site-shell-wide border-t border-[var(--border)] py-3 text-xs leading-6 text-[var(--muted)]">
             这些是能力表达，不是认证标志；若具体项目不包含其中某项，以实际合同与方案为准。
           </p>
         </section>
 
-        <section className="site-shell scroll-mt-20 py-24" id="audiences">
-          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-            <div>
-              <p className="section-kicker">01 · Who we serve</p>
-              <h2 className="section-title">理解不同机构的业务语境，再谈系统方案。</h2>
+        <section className="scroll-mt-20 bg-white py-16 lg:py-20" id="audiences">
+          <div className="site-shell-wide">
+            <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+              <div>
+                <p className="section-kicker">01 · Who we serve</p>
+                <h2 className="section-title">理解不同机构的业务语境，再谈系统方案。</h2>
+              </div>
+              <p className="section-copy">
+                我们只展示已经确认的三类核心服务对象，让定位清晰，也让每种方案从真实组织方式出发。
+              </p>
             </div>
-            <p className="section-copy">
-              我们只展示已经确认的三类核心服务对象，让定位清晰，也让每种方案从真实组织方式出发。
-            </p>
-          </div>
-          <div className="mt-12 grid gap-4 lg:grid-cols-3">
-            {audiences.map((item, index) => (
-              <Reveal delay={index * 80} key={item.title}>
-                <article className="relative min-h-64 overflow-hidden rounded-2xl border border-[var(--border)] bg-gradient-to-br from-white to-[var(--background)] p-7">
-                  <span className="absolute right-6 top-4 text-5xl font-black text-[var(--brand-soft)]">
-                    {item.index}
-                  </span>
-                  <p className="section-kicker">{item.eyebrow}</p>
-                  <h3 className="mt-20 text-2xl font-bold">{item.title}</h3>
-                  <p className="mt-4 leading-7 text-[var(--muted)]">{item.description}</p>
-                </article>
-              </Reveal>
-            ))}
+            <div className="mt-12 grid gap-4 lg:grid-cols-3">
+              {audiences.map((item, index) => (
+                <Reveal delay={index * 80} key={item.title}>
+                  <article className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-gradient-to-br from-white to-[var(--background)] p-7 lg:min-h-56">
+                    <span className="absolute right-6 top-4 text-5xl font-black text-[var(--brand-soft)]">
+                      {item.index}
+                    </span>
+                    <p className="section-kicker">{item.eyebrow}</p>
+                    <h3 className="mt-14 text-2xl font-bold">{item.title}</h3>
+                    <p className="mt-4 leading-7 text-[var(--muted)]">{item.description}</p>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="scroll-mt-20 bg-[var(--background)] py-24" id="solutions">
-          <div className="site-shell">
+        <section className="scroll-mt-20 bg-[var(--background)] py-16 lg:py-20" id="solutions">
+          <div className="site-shell-wide">
             <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
               <div>
                 <p className="section-kicker">02 · Solutions</p>
@@ -138,14 +142,14 @@ export function MarketingPage() {
                   delay={index * 70}
                   key={item.title}
                 >
-                  <article className="relative min-h-60 rounded-2xl border border-[var(--border)] bg-white p-7">
+                  <article className="relative rounded-2xl border border-[var(--border)] bg-white p-7 lg:min-h-52">
                     <span className="absolute right-6 top-6 grid size-11 place-items-center rounded-xl border border-[var(--border)] bg-[var(--background)] text-xl text-[var(--brand)]">
                       {item.icon}
                     </span>
                     <p className="section-kicker">
                       {item.index} / {item.eyebrow}
                     </p>
-                    <h3 className="mt-16 text-2xl font-bold">{item.title}</h3>
+                    <h3 className="mt-12 text-2xl font-bold">{item.title}</h3>
                     <p className="mt-4 max-w-2xl leading-7 text-[var(--muted)]">{item.description}</p>
                   </article>
                 </Reveal>
@@ -154,8 +158,8 @@ export function MarketingPage() {
           </div>
         </section>
 
-        <section className="scroll-mt-20 bg-[var(--foreground)] py-24 text-white" id="delivery">
-          <div className="site-shell">
+        <section className="scroll-mt-20 bg-[var(--foreground)] py-16 text-white lg:py-20" id="delivery">
+          <div className="site-shell-wide">
             <p className="section-kicker text-blue-300">03 · From data to action</p>
             <h2 className="section-title">把医药数据，变成清晰的行动依据。</h2>
             <p className="section-copy mt-5 text-slate-300">
@@ -189,7 +193,7 @@ export function MarketingPage() {
             <div className="mt-20 grid border-y border-white/15 lg:grid-cols-4">
               {deliverySteps.map((item) => (
                 <article
-                  className="min-h-56 border-b border-white/15 p-6 last:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
+                  className="border-b border-white/15 p-6 last:border-b-0 lg:min-h-52 lg:border-b-0 lg:border-r lg:last:border-r-0"
                   key={item.index}
                 >
                   <span className="grid size-9 place-items-center rounded-lg border border-blue-300/30 text-xs text-blue-200">
@@ -203,28 +207,32 @@ export function MarketingPage() {
           </div>
         </section>
 
-        <section className="site-shell scroll-mt-20 py-24" id="scenarios">
-          <p className="section-kicker">04 · Scenario examples</p>
-          <h2 className="section-title">从一个关键场景开始，连接真实业务链。</h2>
-          <p className="section-copy mt-5">以下均为场景示意，不代表未经授权的客户案例或效果承诺。</p>
-          <div className="mt-12 grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
-            {scenarios.map((item, index) => (
-              <article
-                className={`relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white p-7 ${index === 0 ? "min-h-80 lg:row-span-2" : "min-h-40"}`}
-                key={item.title}
-              >
-                <p className="section-kicker">SCENARIO {item.index}</p>
-                <h3 className="mt-12 text-2xl font-bold">{item.title}</h3>
-                <p className="mt-4 max-w-xl leading-7 text-[var(--muted)]">{item.description}</p>
-                <span className="absolute bottom-4 right-6 text-6xl font-black text-[var(--brand-soft)]">
-                  {item.index}
-                </span>
-              </article>
-            ))}
+        <section className="scroll-mt-20 py-16 lg:py-20" id="scenarios">
+          <div className="site-shell-wide">
+            <p className="section-kicker">04 · Scenario examples</p>
+            <h2 className="section-title">从一个关键场景开始，连接真实业务链。</h2>
+            <p className="section-copy mt-5">以下均为场景示意，不代表未经授权的客户案例或效果承诺。</p>
+            <div className="mt-12 grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+              {scenarios.map((item, index) => (
+                <article
+                  className={`relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white p-7 ${
+                    index === 0 ? "lg:min-h-72 lg:row-span-2" : ""
+                  }`}
+                  key={item.title}
+                >
+                  <p className="section-kicker">SCENARIO {item.index}</p>
+                  <h3 className="mt-10 text-2xl font-bold">{item.title}</h3>
+                  <p className="mt-4 max-w-xl leading-7 text-[var(--muted)]">{item.description}</p>
+                  <span className="absolute bottom-4 right-6 text-6xl font-black text-[var(--brand-soft)]">
+                    {item.index}
+                  </span>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="scroll-mt-20 bg-white py-24" id="about">
+        <section className="scroll-mt-20 bg-white py-16 lg:py-20" id="about">
           <div className="site-shell">
             <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
               <div>
@@ -237,7 +245,7 @@ export function MarketingPage() {
             </div>
             <div className="mt-12 grid border-y border-[var(--border)] sm:grid-cols-2 lg:grid-cols-4">
               {trustPrinciples.map((item) => (
-                <article className="min-h-44 border-[var(--border)] p-6 sm:border-r" key={item.index}>
+                <article className="border-[var(--border)] p-6 sm:border-r lg:min-h-44" key={item.index}>
                   <span className="text-lg text-[var(--brand)]">{item.index}</span>
                   <h3 className="mt-10 font-bold">{item.title}</h3>
                   <p className="mt-2 text-sm text-[var(--muted)]">{item.description}</p>
@@ -251,7 +259,7 @@ export function MarketingPage() {
         </section>
 
         <section className="scroll-mt-20 bg-white py-12 sm:py-16" id="contact">
-          <div className="site-shell">
+          <div className="site-shell-wide">
             <div className="contact-panel grid gap-10 rounded-[1.5rem] p-6 text-white sm:p-10 lg:grid-cols-[.78fr_1.22fr] lg:p-14">
               <div className="lg:pt-2">
                 <p className="section-kicker text-blue-300">Business inquiry</p>
@@ -274,7 +282,7 @@ export function MarketingPage() {
       </main>
 
       <footer className="border-t border-[var(--border)] bg-[var(--background)] py-10">
-        <div className="site-shell flex flex-col justify-between gap-4 text-sm text-[var(--muted)] lg:flex-row">
+        <div className="site-shell-wide flex flex-col justify-between gap-4 text-sm text-[var(--muted)] lg:flex-row">
           <p>© 2026 {brand.legalName}</p>
           <div className="max-w-3xl lg:text-right">
             <a
