@@ -36,3 +36,27 @@ test("supporting scenario panels keep meaningful text and decorative charts sepa
   assert.match(analysis, /医药商业经营分析模拟界面/);
   assert.doesNotMatch(`${ledger}\n${analysis}`, /use client|canvas|setInterval|requestAnimationFrame/);
 });
+
+test("marketing page delegates the complete scenario section to ScenarioShowcase", () => {
+  const page = read("components/marketing/marketing-page.tsx");
+  const showcase = read("components/marketing/scenario-showcase.tsx");
+  assert.match(page, /import \{ScenarioShowcase\}/);
+  assert.match(page, /<ScenarioShowcase \/>/);
+  assert.doesNotMatch(page, /scenarios\.map/);
+  assert.match(showcase, /id="scenarios"/);
+  assert.match(showcase, /scenarioDisclaimer/);
+  assert.match(showcase, /ScenarioDashboard/);
+  assert.match(showcase, /ScenarioLedger/);
+  assert.match(showcase, /ScenarioAnalysis/);
+});
+
+test("scenario styles include desktop composition, mobile simplification, and reduced motion", () => {
+  const css = read("app/globals.css");
+  assert.match(css, /\.scenario-showcase-grid/);
+  assert.match(css, /grid-template-columns:\s*1\.25fr\s+0\.75fr/);
+  assert.match(css, /@media \(max-width: 1023px\)/);
+  assert.match(css, /@media \(max-width: 767px\)/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(css, /\.scenario-progress-track i/);
+  assert.doesNotMatch(css, /scenario-[^{]+\{[^}]*animation:[^;]*(infinite|linear infinite)/is);
+});
