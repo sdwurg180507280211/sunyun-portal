@@ -63,3 +63,10 @@ test("scenario styles include desktop composition, mobile simplification, and re
   assert.equal(css.includes("animation: infinite"), false);
   assert.equal(css.includes("linear infinite"), false);
 });
+
+test("visual QA isolates Chrome debugging and waits for the assigned port", () => {
+  const script = read("scripts/capture-scenario-visual-qa.mjs");
+  assert.ok(script.includes('"--remote-debugging-port=0"'));
+  assert.ok(script.includes("DevToolsActivePort"));
+  assert.equal(script.includes("const debugPort = 9222"), false);
+});
