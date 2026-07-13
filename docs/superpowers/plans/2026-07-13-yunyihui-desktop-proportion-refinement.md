@@ -182,7 +182,7 @@ test("marketing page applies wide shells with compact responsive rhythm", () => 
   const footer = source.match(/<footer\b[\s\S]*?<\/footer>/)?.[0] ?? "";
 
   assert.match(header, /site-shell-wide/);
-  assert.match(hero, /site-shell-wide grid min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/);
+  assert.match(hero, /site-shell-wide grid lg:min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/);
   assert.doesNotMatch(hero, /min-h-\[700px\]/);
 
   for (const id of ["audiences", "solutions", "delivery", "scenarios"]) {
@@ -212,7 +212,7 @@ test("marketing page applies wide shells with compact responsive rhythm", () => 
 ```ts
   assert.match(
     source,
-    /site-shell-wide grid min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/,
+    /site-shell-wide grid lg:min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/,
   );
   assert.doesNotMatch(source, /min-h-\[700px\]/);
   assert.doesNotMatch(source, /lg:grid-cols-\[1\.05fr_\.95fr\]/);
@@ -243,7 +243,7 @@ Expected: FAIL，原因至少包含页面中没有 `site-shell-wide`，而不是
 </header>
 
 <section className="prism-grid-bg relative">
-  <div className="site-shell-wide grid min-h-[660px] lg:grid-cols-[7fr_5fr]">
+  <div className="site-shell-wide grid lg:min-h-[660px] lg:grid-cols-[7fr_5fr]">
     <div className="relative z-10 flex items-center py-16 sm:pr-8 lg:py-20 lg:pr-10">
       {/* 现有 Hero 文案、按钮与边界说明原样保留 */}
     </div>

@@ -54,7 +54,7 @@ export function MarketingPage() {
 
       <main className="overflow-hidden" id="top">
         <section className="prism-grid-bg relative">
-          <div className="site-shell-wide grid min-h-[660px] lg:grid-cols-[7fr_5fr]">
+          <div className="site-shell-wide grid lg:min-h-[660px] lg:grid-cols-[7fr_5fr]">
             <div className="relative z-10 flex items-center py-16 sm:pr-8 lg:py-20 lg:pr-10">
               <div className="max-w-3xl">
                 <p className="section-kicker">面向机构客户 · 医药产业数字化技术服务</p>

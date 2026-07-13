@@ -110,7 +110,8 @@ test("marketing page applies wide shells with compact responsive rhythm", () => 
   const footer = source.match(/<footer\b[\s\S]*?<\/footer>/)?.[0] ?? "";
 
   assert.match(header, /site-shell-wide/);
-  assert.match(hero, /site-shell-wide grid min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/);
+  assert.match(hero, /site-shell-wide grid lg:min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/);
+  assert.doesNotMatch(hero, /(?:^|[\s"])min-h-\[660px\](?=[\s"`})])/);
   assert.doesNotMatch(hero, /min-h-\[700px\]/);
 
   for (const id of ["audiences", "solutions", "delivery", "scenarios"]) {
@@ -118,6 +119,7 @@ test("marketing page applies wide shells with compact responsive rhythm", () => 
     assert.match(section(id), /py-16[^"\n]*lg:py-20/);
   }
   assert.match(section("audiences"), /bg-white/);
+  assert.match(section("solutions"), /bg-\[var\(--background\)\]/);
   assert.match(section("about"), /site-shell(?:\s|["'])/);
   assert.doesNotMatch(section("about"), /site-shell-wide/);
   assert.match(section("about"), /py-16[^"\n]*lg:py-20/);
@@ -125,12 +127,15 @@ test("marketing page applies wide shells with compact responsive rhythm", () => 
   assert.match(footer, /site-shell-wide/);
 
   assert.match(section("audiences"), /lg:min-h-56/);
-  assert.doesNotMatch(section("audiences"), /\bmin-h-64\b/);
   assert.match(section("solutions"), /lg:min-h-52/);
-  assert.doesNotMatch(section("solutions"), /\bmin-h-60\b/);
   assert.match(section("scenarios"), /lg:min-h-72/);
-  assert.doesNotMatch(section("scenarios"), /\bmin-h-(?:80|40)\b/);
   assert.match(section("about"), /lg:min-h-44/);
+
+  const unprefixedCardMinimum = /(?:^|[\s"])min-h-(?:44|52|56|72)(?=[\s"`})])/;
+  for (const id of ["audiences", "solutions", "delivery", "scenarios", "about"]) {
+    assert.doesNotMatch(section(id), unprefixedCardMinimum);
+  }
+
   assert.match(section("contact"), /lg:grid-cols-\[\.78fr_1\.22fr\]/);
 });
 
@@ -140,8 +145,9 @@ test("hero keeps each approved claim sentence on one line across target viewport
 
   assert.match(
     source,
-    /site-shell-wide grid min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/,
+    /site-shell-wide grid lg:min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/,
   );
+  assert.doesNotMatch(source, /(?:^|[\s"])min-h-\[660px\](?=[\s"`})])/);
   assert.doesNotMatch(source, /min-h-\[700px\]/);
   assert.doesNotMatch(source, /lg:grid-cols-\[1\.05fr_\.95fr\]/);
   assert.doesNotMatch(source, /xl:px-\[max\(8vw,2rem\)\]/);
