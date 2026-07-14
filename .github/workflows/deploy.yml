@@ -99,6 +99,9 @@ jobs:
           export SUNYUN_RUN_UID="$(id -u)"
           export SUNYUN_RUN_GID="$(id -g)"
           compose=(docker compose --env-file "$env_file")
+          # 清除可能由手动 `docker run` 创建的同名遗留容器，避免 compose up 因名称冲突失败。
+          # （曾因 HTTPS 配置手动起容器，导致后续自动部署冲突回滚。）
+          docker rm -f sunyun-portal 2>/dev/null || true
           had_previous=0
 
           restore_previous() {
@@ -192,6 +195,8 @@ jobs:
           export SUNYUN_RUN_UID="$(id -u)"
           export SUNYUN_RUN_GID="$(id -g)"
           compose=(docker compose -p sunyun-test -f docker-compose.test.yml --env-file "$env_file")
+          # 清除可能由手动 `docker run` 创建的同名遗留容器，避免 compose up 因名称冲突失败。
+          docker rm -f sunyun-portal-test 2>/dev/null || true
           had_previous=0
 
           restore_previous() {
