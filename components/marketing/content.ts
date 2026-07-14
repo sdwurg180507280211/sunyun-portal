@@ -28,10 +28,28 @@ export const deliverySteps = [
   {index: "04", title: "上线与迭代", description: "完成部署、培训与问题跟踪，按约定持续演进。"},
 ] as const;
 
+export const scenarioDisclaimer =
+  "以下内容为基于行业常见业务流程构建的场景示意，不代表特定客户项目或效果承诺。";
+
 export const scenarios = [
-  {index: "01", title: "药企业务协同平台", description: "统一客户、项目、资料、活动与跟进记录，让协作过程可见，信息沉淀可用。"},
-  {index: "02", title: "非诊疗运营工具", description: "面向医疗机构的运营流程、台账和知识协作。"},
-  {index: "03", title: "经营与渠道协同", description: "连接客户、渠道和经营数据，形成统一业务视图。"},
+  {
+    index: "01",
+    eyebrow: "PHARMA COLLABORATION",
+    title: "药企业务协同平台",
+    description: "统一客户、项目、资料、活动与跟进记录，让协作过程可见，信息沉淀可用。",
+  },
+  {
+    index: "02",
+    eyebrow: "OPERATIONS LEDGER",
+    title: "医疗机构运营台账",
+    description: "围绕非诊疗事项、到期提醒、知识协作与责任状态形成清晰台账。",
+  },
+  {
+    index: "03",
+    eyebrow: "COMMERCE ANALYSIS",
+    title: "医药商业经营分析",
+    description: "连接渠道、订单、库存与客户结构，形成可理解的经营趋势和重点关注项。",
+  },
 ] as const;
 
 export const trustPrinciples = [
