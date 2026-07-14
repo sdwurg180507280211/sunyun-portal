@@ -4,12 +4,12 @@ import {
   deliverables,
   deliverySteps,
   navigation,
-  scenarios,
   solutions,
   trustPrinciples,
 } from "@/components/marketing/content";
 import {PrismGraphic} from "@/components/marketing/prism-graphic";
 import {Reveal} from "@/components/marketing/reveal";
+import {ScenarioShowcase} from "@/components/marketing/scenario-showcase";
 import {brand} from "@/lib/brand";
 
 const primaryLink =
@@ -207,30 +207,7 @@ export function MarketingPage() {
           </div>
         </section>
 
-        <section className="scroll-mt-20 py-16 lg:py-20" id="scenarios">
-          <div className="site-shell-wide">
-            <p className="section-kicker">04 · Scenario examples</p>
-            <h2 className="section-title">从一个关键场景开始，连接真实业务链。</h2>
-            <p className="section-copy mt-5">以下均为场景示意，不代表未经授权的客户案例或效果承诺。</p>
-            <div className="mt-12 grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
-              {scenarios.map((item, index) => (
-                <article
-                  className={`relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white p-7 ${
-                    index === 0 ? "lg:min-h-72 lg:row-span-2" : ""
-                  }`}
-                  key={item.title}
-                >
-                  <p className="section-kicker">SCENARIO {item.index}</p>
-                  <h3 className="mt-10 text-2xl font-bold">{item.title}</h3>
-                  <p className="mt-4 max-w-xl leading-7 text-[var(--muted)]">{item.description}</p>
-                  <span className="absolute bottom-4 right-6 text-6xl font-black text-[var(--brand-soft)]">
-                    {item.index}
-                  </span>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
+        <ScenarioShowcase />
 
         <section className="scroll-mt-20 bg-white py-16 lg:py-20" id="about">
           <div className="site-shell">
