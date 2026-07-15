@@ -1,0 +1,187 @@
+name: PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: sunyun-preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == github.repository_owner
+    runs-on: self-hosted
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PREVIEW_ROOT: /opt/sunyun-portal/previews/pr-${{ github.event.pull_request.number }}
+      PREVIEW_CONTAINER: sunyun-preview-pr-${{ github.event.pull_request.number }}
+      PREVIEW_TUNNEL_CONTAINER: sunyun-preview-tunnel-pr-${{ github.event.pull_request.number }}
+      PREVIEW_IMAGE: sunyun-portal:preview-pr-${{ github.event.pull_request.number }}
+    steps:
+      - name: Remove previous preview resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker rm -f "$PREVIEW_CONTAINER" "$PREVIEW_TUNNEL_CONTAINER" 2>/dev/null || true
+          docker image rm "$PREVIEW_IMAGE" 2>/dev/null || true
+          rm -rf "$PREVIEW_ROOT"
+          echo "Previous PR preview resources removed."
+
+      - name: Update closed-preview comment
+        if: github.event.action == 'closed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- yunyihui-pr-preview -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+            const body = `${marker}\n### PR 预览环境\n\n预览已关闭并清理。`;
+            if (existing) {
+              await github.rest.issues.updateComment({owner, repo, comment_id: existing.id, body});
+            }
+
+      - name: Checkout pull request revision
+        if: github.event.action != 'closed'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          clean: true
+
+      - name: Prepare isolated preview tunnel
+        if: github.event.action != 'closed'
+        id: tunnel
+        shell: bash
+        run: |
+          set -euo pipefail
+          PREVIEW_PORT=$((18000 + PR_NUMBER))
+          export PREVIEW_PORT
+          echo "PREVIEW_PORT=$PREVIEW_PORT" >> "$GITHUB_ENV"
+
+          mkdir -p "$PREVIEW_ROOT/data"
+          chmod 700 "$PREVIEW_ROOT"
+          chmod 755 "$PREVIEW_ROOT/data"
+
+          docker pull cloudflare/cloudflared:latest
+          docker run -d \
+            --name "$PREVIEW_TUNNEL_CONTAINER" \
+            --restart unless-stopped \
+            --network host \
+            cloudflare/cloudflared:latest \
+            tunnel --no-autoupdate --url "http://127.0.0.1:$PREVIEW_PORT"
+
+          preview_url=""
+          for attempt in $(seq 1 40); do
+            preview_url="$(docker logs "$PREVIEW_TUNNEL_CONTAINER" 2>&1 | grep -oE 'https://[-a-z0-9]+\.trycloudflare\.com' | head -n 1 || true)"
+            if [ -n "$preview_url" ]; then
+              break
+            fi
+            sleep 1
+          done
+
+          if [ -z "$preview_url" ]; then
+            docker logs "$PREVIEW_TUNNEL_CONTAINER" || true
+            exit 1
+          fi
+
+          echo "$preview_url" > "$PREVIEW_ROOT/url"
+          echo "url=$preview_url" >> "$GITHUB_OUTPUT"
+
+      - name: Build and start isolated preview container
+        if: github.event.action != 'closed'
+        shell: bash
+        env:
+          PREVIEW_URL: ${{ steps.tunnel.outputs.url }}
+        run: |
+          set -euo pipefail
+          docker build \
+            --build-arg "NEXT_PUBLIC_SITE_URL=$PREVIEW_URL" \
+            -t "$PREVIEW_IMAGE" .
+
+          session_secret="$(openssl rand -hex 32)"
+          preview_password_hash='scrypt:d0bc04ea3761a7bc538fe084afdb00e2:daa82b69b2c4a600509f935945dd547d05e39a2d7c47cf5838cac7e899a32f822c60d69b922021497f479eecde6299651e8915891c81a7b7359519763d074a74'
+
+          docker run -d \
+            --name "$PREVIEW_CONTAINER" \
+            --restart unless-stopped \
+            --user "$(id -u):$(id -g)" \
+            -p "127.0.0.1:$PREVIEW_PORT:8080" \
+            -v "$PREVIEW_ROOT/data:/app/data" \
+            -e NODE_ENV=production \
+            -e PORT=8080 \
+            -e HOSTNAME=0.0.0.0 \
+            -e "NEXT_PUBLIC_SITE_URL=$PREVIEW_URL" \
+            -e DATABASE_PATH=/app/data/preview.db \
+            -e LEGACY_LEADS_PATH=/app/data/leads.jsonl \
+            -e ADMIN_USERNAME=preview-disabled \
+            -e "ADMIN_PASSWORD_HASH=$preview_password_hash" \
+            -e "SESSION_SECRET=$session_secret" \
+            -e SESSION_TTL_SECONDS=3600 \
+            -e COOKIE_SECURE=1 \
+            -e TRUST_PROXY=1 \
+            -e SUNYUN_ADMIN_TOKEN= \
+            "$PREVIEW_IMAGE"
+
+          local_ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS "http://127.0.0.1:$PREVIEW_PORT/api/health"; then
+              local_ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$local_ready" -ne 1 ]; then
+            docker logs "$PREVIEW_CONTAINER" || true
+            exit 1
+          fi
+
+          public_ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$PREVIEW_URL/api/health"; then
+              public_ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$public_ready" -ne 1 ]; then
+            docker logs "$PREVIEW_TUNNEL_CONTAINER" || true
+            exit 1
+          fi
+
+      - name: Publish preview address to pull request
+        if: github.event.action != 'closed'
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.tunnel.outputs.url }}
+        with:
+          script: |
+            const marker = '<!-- yunyihui-pr-preview -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+            const body = `${marker}\n### PR 预览环境\n\n✅ 已部署本 PR 的独立测试环境：${process.env.PREVIEW_URL}\n\n- 每次同步先清理旧资源，再部署当前提交\n- 使用独立容器和临时 SQLite，不读取生产数据\n- 临时隧道地址可能在重新部署后变化\n- PR 关闭后会清理预览容器与临时数据`;
+            if (existing) {
+              await github.rest.issues.updateComment({owner, repo, comment_id: existing.id, body});
+            } else {
+              await github.rest.issues.createComment({owner, repo, issue_number, body});
+            }

@@ -43,29 +43,24 @@ test("marketing layout defines layered containers and reading measures", () => {
 });
 
 test("marketing page exposes the approved Pharma Prism sections", () => {
-  const source = read("components/marketing/marketing-page.tsx");
+  const page = read("components/marketing/marketing-page.tsx");
+  const showcase = read("components/marketing/scenario-showcase.tsx");
   const heroClaim = /让医药数字化，[\s\S]*落到真实业务里。/;
-  for (const id of ["top", "audiences", "solutions", "delivery", "scenarios", "about", "contact"]) {
-    assert.match(source, new RegExp(`id=["']${id}["']`));
+  for (const id of ["top", "audiences", "solutions", "delivery", "about", "contact"]) {
+    assert.match(page, new RegExp(`id=["']${id}["']`));
   }
-  for (const collection of [
-    "navigation",
-    "deliverables",
-    "audiences",
-    "solutions",
-    "deliverySteps",
-    "scenarios",
-    "trustPrinciples",
-  ]) {
-    assert.match(source, new RegExp(`${collection}\\.map\\(`));
+  assert.match(showcase, /id="scenarios"/);
+  for (const collection of ["navigation", "deliverables", "audiences", "solutions", "deliverySteps", "trustPrinciples"]) {
+    assert.match(page, new RegExp(`${collection}\\.map\\(`));
   }
-  assert.match(source, /PrismGraphic/);
-  assert.match(source, /<Reveal\b/);
-  assert.match(source, /<LeadForm\s*\/>/);
-  assert.match(source, /brand\.disclaimer/);
+  assert.match(showcase, /scenarios/);
+  assert.match(page, /PrismGraphic/);
+  assert.match(page, /<Reveal\b/);
+  assert.match(page, /<LeadForm\s*\/>/);
+  assert.match(page, /brand\.disclaimer/);
   assert.doesNotMatch("让医药数字化，<br />错误的后半句。", heroClaim);
-  assert.match(source, heroClaim);
-  assert.doesNotMatch(source, /Delivery console|88\s*-|index \* 14|榫合云/);
+  assert.match(page, heroClaim);
+  assert.doesNotMatch(page, /Delivery console|88\s*-|index \* 14|榫合云/);
 });
 
 test("marketing capability claims defer to project contracts and acceptance results", () => {
@@ -102,12 +97,14 @@ test("contact section preserves the approved gradient and glass composition", ()
 });
 
 test("marketing page applies wide shells with compact responsive rhythm", () => {
-  const source = read("components/marketing/marketing-page.tsx");
+  const page = read("components/marketing/marketing-page.tsx");
+  const showcase = read("components/marketing/scenario-showcase.tsx");
+  const source = `${page}\n${showcase}`;
   const section = (id: string) =>
     source.match(new RegExp(`<section\\b[^>]*id=["']${id}["'][\\s\\S]*?<\\/section>`))?.[0] ?? "";
-  const hero = source.match(/<section\b[^>]*prism-grid-bg[\s\S]*?<\/section>/)?.[0] ?? "";
-  const header = source.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
-  const footer = source.match(/<footer\b[\s\S]*?<\/footer>/)?.[0] ?? "";
+  const hero = page.match(/<section\b[^>]*prism-grid-bg[\s\S]*?<\/section>/)?.[0] ?? "";
+  const header = page.match(/<header\b[\s\S]*?<\/header>/)?.[0] ?? "";
+  const footer = page.match(/<footer\b[\s\S]*?<\/footer>/)?.[0] ?? "";
 
   assert.match(header, /site-shell-wide/);
   assert.match(hero, /site-shell-wide grid lg:min-h-\[660px\][^"\n]*lg:grid-cols-\[7fr_5fr\]/);
@@ -128,7 +125,7 @@ test("marketing page applies wide shells with compact responsive rhythm", () => 
 
   assert.match(section("audiences"), /lg:min-h-56/);
   assert.match(section("solutions"), /lg:min-h-52/);
-  assert.match(section("scenarios"), /lg:min-h-72/);
+  assert.match(section("scenarios"), /scenario-card-main/);
   assert.match(section("about"), /lg:min-h-44/);
 
   const unprefixedCardMinimum = /(?:^|[\s"])min-h-(?:44|52|56|72)(?=[\s"`})])/;

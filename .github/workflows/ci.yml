@@ -48,6 +48,57 @@ jobs:
           done
           cat "$RUNNER_TEMP/sunyun-ci.log"
           exit 1
+      - name: Capture scenario visual QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+          mkdir -p visual-qa
+          PORT=8081 \
+          HOSTNAME=127.0.0.1 \
+          DATABASE_PATH="$RUNNER_TEMP/sunyun-visual.db" \
+          COOKIE_SECURE=0 \
+          NEXT_TELEMETRY_DISABLED=1 \
+          node .next/standalone/server.js > "$RUNNER_TEMP/sunyun-visual.log" 2>&1 &
+          visual_pid=$!
+          trap 'kill "$visual_pid" 2>/dev/null || true' EXIT
+          server_ready=0
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8081/api/health; then
+              server_ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$server_ready" -ne 1 ]; then
+            cat "$RUNNER_TEMP/sunyun-visual.log"
+            exit 1
+          fi
+          set +e
+          node scripts/capture-scenario-visual-qa.mjs http://127.0.0.1:8081 visual-qa 2>&1 | tee visual-qa-capture.log
+          capture_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$capture_status" -ne 0 ]; then
+            exit "$capture_status"
+          fi
+          test "$(find visual-qa -name '*.png' | wc -l)" -eq 7
+      - name: Upload scenario visual QA diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yunyihui-scenario-visual-qa-debug
+          path: |
+            visual-qa-capture.log
+            ${{ runner.temp }}/sunyun-visual.log
+          if-no-files-found: ignore
+          retention-days: 3
+      - name: Upload scenario visual QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: yunyihui-scenario-visual-qa
+          path: visual-qa/*.png
+          retention-days: 7
       - name: Build production Docker image
         env:
           DOCKER_BUILDKIT: "1"
